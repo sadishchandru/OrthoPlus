@@ -1,0 +1,68 @@
+services:
+  apache:
+    image: httpd:latest
+    container_name: apache_server
+    ports:
+      - "80:80"
+    volumes:
+      - ./www:/usr/local/apache2/htdocs/
+    depends_on:
+      - mysql
+    networks:
+      - app_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_server
+    environment:
+      MYSQL_ROOT_PASSWORD: showme
+      MYSQL_DATABASE: clinic
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: showme
+      UPLOAD_LIMIT: 16M
+      MAX_EXECUTION_TIME: 300
+      MEMORY_LIMIT: 256M
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - app_network
+
+  laravel:
+    build: ./docker/laravel
+    container_name: laravel_app
+    ports:
+      - "8001:8000"
+    environment:
+      DB_HOST: mysql
+      DB_DATABASE: clinic
+      DB_USERNAME: root
+      DB_PASSWORD: showme
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    depends_on:
+      - mysql
+    networks:
+      - app_network
+
+volumes:
+  mysql_data:
+
+networks:
+  app_network:
+    driver: bridge

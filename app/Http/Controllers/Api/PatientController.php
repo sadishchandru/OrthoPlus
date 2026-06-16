@@ -1,0 +1,122 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Patient;
+use App\Models\ClinicalRecord;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+class PatientController extends Controller
+{
+    public function index(Request $request)
+    {
+        $q = $request->get('q') ?? $request->get('search');
+        $patients = Patient::query()
+            ->when($q, fn($query) => $query->where(function ($query) use ($q) {
+                $query->where('name', 'like', "%$q%")
+                      ->orWhere('phone', 'like', "%$q%")
+                      ->orWhere('op_number', 'like', "%$q%");
+            }))
+            ->orderByDesc('created_at')
+            ->paginate(15);
+
+        return response()->json($patients);
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name'   => 'required|string|max:255',
+            'phone'  => 'required|string|max:20',
+            'dob'    => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'photo'  => 'nullable|string',
+            'documents' => 'nullable|array',
+            'address'   => 'nullable|array',
+        ]);
+
+        // Duplicate check
+        $opNumberCol = Schema::hasColumn('patients', 'op_number') ? 'op_number' : 'op_number_prefix';
+        $dupe = Patient::where('phone', $data['phone'])
+            ->orWhere(fn($q) => $q->whereRaw('LOWER(name) = ?', [strtolower($data['name'])]))
+            ->get(['id', 'name', 'phone', $opNumberCol]);
+
+        $warning = null;
+        if ($dupe->isNotEmpty()) {
+            $warning = [
+                'message'   => 'Possible duplicate patient found.',
+                'patients'  => $dupe,
+            ];
+        }
+
+        // Generate OP Number
+        $opNo = $this->generateOpNo();
+
+        $patient = Patient::create(array_merge($data, [
+            'op_number'          => $opNo,
+            'op_number_prefix'   => 'N',
+            'op_number_counter'  => 1,
+            'address'            => $data['address'] ?? [],
+            'duplicate_detection_fields' => json_encode(['name', 'phone']),
+        ]));
+
+        return response()->json([
+            'patient' => $patient,
+            'warning' => $warning,
+        ], 201);
+    }
+
+    public function show(Patient $patient)
+    {
+        $patient->load('appointments');
+        $patient->setRelation('visits', ClinicalRecord::where('patient_id', $patient->id)
+            ->orderByDesc('created_at')
+            ->get());
+
+        return response()->json($patient);
+    }
+
+    public function visits(Patient $patient)
+    {
+        $records = ClinicalRecord::where('patient_id', $patient->id)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json($records);
+    }
+
+    public function search(Request $request)
+    {
+        $q = $request->get('q', '');
+        $hasOpNumber = Schema::hasColumn('patients', 'op_number');
+        $opCol = $hasOpNumber ? 'op_number' : 'op_number_prefix';
+
+        $patients = Patient::where('name', 'like', "%$q%")
+            ->orWhere('phone', 'like', "%$q%")
+            ->orWhere($opCol, 'like', "%$q%")
+            ->limit(10)
+            ->get(array_filter(['id', 'name', 'phone', $opCol, 'gender', 'dob']))
+            ->map(fn($p) => array_merge($p->toArray(), ['op_number' => $p->$opCol]));
+
+        return response()->json($patients);
+    }
+
+    private function generateOpNo(): string
+    {
+        $last = Patient::selectRaw("MAX(CAST(SUBSTRING_INDEX(op_number, '-', -1) AS UNSIGNED)) as max_num")
+            ->where('op_number', 'not like', '%-%-%') // exclude revisit OPNos
+            ->value('max_num');
+
+        return 'N-' . (($last ?? 0) + 1);
+    }
+
+    public function generateRevisitOpNo(Patient $patient): string
+    {
+        // Count existing revisits
+        $visitCount = ClinicalRecord::where('patient_id', $patient->id)->count();
+        return $patient->op_number . '-' . ($visitCount + 1);
+    }
+}
