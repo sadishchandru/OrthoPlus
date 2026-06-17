@@ -88,8 +88,8 @@ Route::get('/rooms', fn() => \App\Models\Room::where('is_active', true)->get());
 Route::get('/packages', fn() => \App\Models\Package::where('is_active', true)->get());
 Route::get('/soap-templates', [SoapTemplateController::class, 'index']);
 
-// ---- Pharmacy counter (pharmacy + root) ----------------------------------
-Route::prefix('pharmacy')->middleware('role:pharmacy,root')->group(function () {
+// ---- Pharmacy counter (open like the rest of the app; page is router-guarded) ----
+Route::prefix('pharmacy')->group(function () {
     Route::get('/patients/search', [PharmacyController::class, 'searchPatient']);
     Route::get('/patients/{patient}/prescriptions', [PharmacyController::class, 'prescriptions']);
     Route::post('/invoices', [PharmacyController::class, 'store']);

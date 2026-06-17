@@ -18,15 +18,36 @@ class MedicineController extends Controller
         return response()->json($q->paginate(15));
     }
 
-    /** Autocomplete for prescriptions/pharmacy. */
+    /** Autocomplete for prescriptions/pharmacy — FULLTEXT (idx_med_search) with LIKE fallback. */
     public function search(Request $request)
     {
-        $term = $request->get('q', '');
+        $cols = ['id', 'name', 'generic_name', 'unit', 'strength', 'quantity', 'sell_price', 'hsn_code', 'expiry_date'];
+
+        // Strip boolean-mode operators so user input can't break the query.
+        $term = trim(preg_replace('/[+\-><()~*"@]+/', ' ', $request->get('q', '')));
+
+        // FULLTEXT needs tokens >= ft_min_token_size (default 3). Shorter → LIKE.
+        $words = array_filter(explode(' ', $term));
+        $ftEligible = collect($words)->contains(fn($w) => strlen($w) >= 3);
+
+        if ($ftEligible) {
+            $expr = collect($words)->map(fn($w) => '+' . $w . '*')->implode(' ');
+            $meds = Medicine::where('status', 'active')
+                ->whereRaw('MATCH(name, generic_name) AGAINST(? IN BOOLEAN MODE)', [$expr])
+                ->limit(15)
+                ->get($cols);
+            if ($meds->isNotEmpty()) {
+                return response()->json($meds);
+            }
+        }
+
+        // Fallback: LIKE (short query or no FULLTEXT hits)
+        $like = '%' . $term . '%';
         $meds = Medicine::where('status', 'active')
-            ->where(fn($qq) => $qq->where('name', 'like', "%$term%")
-                ->orWhere('generic_name', 'like', "%$term%"))
+            ->where(fn($qq) => $qq->where('name', 'like', $like)
+                ->orWhere('generic_name', 'like', $like))
             ->limit(15)
-            ->get(['id', 'name', 'generic_name', 'unit', 'strength', 'quantity', 'sell_price']);
+            ->get($cols);
 
         return response()->json($meds);
     }

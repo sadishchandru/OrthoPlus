@@ -9,13 +9,12 @@
       </div>
     </div>
 
-    <div class="relative inline-block border rounded-lg bg-gray-50 p-2">
+    <div class="relative block w-full max-w-[260px] border rounded-lg bg-gray-50 p-2">
       <svg
         viewBox="0 0 200 400"
-        width="200"
-        height="400"
-        class="cursor-crosshair"
+        class="w-full h-auto cursor-crosshair touch-manipulation select-none"
         @click="addPoint"
+        @touchstart.prevent="addPoint"
         ref="svgRef"
       >
         <!-- Body outline -->
@@ -45,6 +44,7 @@
             stroke="white"
             stroke-width="1.5"
             @click.stop="removePoint(i)"
+            @touchstart.stop.prevent="removePoint(i)"
             class="cursor-pointer"
           />
           <text :x="point.x" :y="point.y + 4" text-anchor="middle" font-size="9" fill="white">{{ point.severity }}</text>
@@ -108,8 +108,10 @@ function addPoint(e) {
   const rect = svg.getBoundingClientRect();
   const scaleX = 200 / rect.width;
   const scaleY = 400 / rect.height;
-  const x = Math.round((e.clientX - rect.left) * scaleX);
-  const y = Math.round((e.clientY - rect.top) * scaleY);
+  // Support both mouse and touch
+  const pt = (e.touches && e.touches[0]) || (e.changedTouches && e.changedTouches[0]) || e;
+  const x = Math.round((pt.clientX - rect.left) * scaleX);
+  const y = Math.round((pt.clientY - rect.top) * scaleY);
   emit('update:modelValue', [...props.modelValue, { x, y, severity: nextSeverity.value, label: '' }]);
 }
 

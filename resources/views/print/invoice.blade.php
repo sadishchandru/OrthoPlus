@@ -3,6 +3,16 @@ require_once resource_path('views/print/_helpers.php');
 $t   = printLang(request('lang', 'en'));
 $inv = \App\Models\Invoice::with('patient')->findOrFail($id);
 $pat = $inv->patient;
+
+// Pharmacy bills: resolve Generic / HSN / Expiry per line from the medicines table.
+$isPharma = ($inv->type ?? 'clinical') === 'pharmacy';
+$medMap = collect();
+if ($isPharma) {
+    $ids = collect($inv->items)->pluck('medicine_id')->filter()->unique()->values();
+    if ($ids->isNotEmpty()) {
+        $medMap = \App\Models\Medicine::whereIn('id', $ids)->get()->keyBy('id');
+    }
+}
 @endphp
 @extends('print.layout')
 @section('title', $t['invoice'] . ' ' . $inv->invoice_no)
@@ -24,8 +34,10 @@ $pat = $inv->patient;
 </div>
 
 <div style="background:#eff6ff; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
-    <div><strong>{{ $t['patient_name'] }}:</strong> {{ $pat->name }}</div>
+    <div><strong>{{ $t['patient_name'] }}:</strong> {{ $pat->name ?? 'Walk-in' }}</div>
+    @if($pat)
     <div><strong>{{ $t['op_number'] }}:</strong> {{ $pat->op_number }} &nbsp; <strong>{{ $t['phone'] }}:</strong> {{ $pat->phone }}</div>
+    @endif
 </div>
 
 <table>
@@ -33,6 +45,11 @@ $pat = $inv->patient;
         <tr>
             <th>#</th>
             <th>{{ $t['description'] }}</th>
+            @if($isPharma)
+            <th>Generic</th>
+            <th>HSN</th>
+            <th>Expiry</th>
+            @endif
             <th style="text-align:right;">{{ $t['qty'] }}</th>
             <th style="text-align:right;">{{ $t['rate'] }} (₹)</th>
             <th style="text-align:right;">{{ $t['amount'] }} (₹)</th>
@@ -40,9 +57,15 @@ $pat = $inv->patient;
     </thead>
     <tbody>
         @foreach($inv->items as $i => $item)
+        @php $med = $isPharma ? ($medMap[$item['medicine_id'] ?? null] ?? null) : null; @endphp
         <tr>
             <td style="text-align:center;">{{ $i + 1 }}</td>
             <td>{{ $item['description'] }}</td>
+            @if($isPharma)
+            <td>{{ $med?->generic_name ?: '—' }}</td>
+            <td>{{ $med?->hsn_code ?: '—' }}</td>
+            <td>{{ $med && $med->expiry_date ? \Carbon\Carbon::parse($med->expiry_date)->format('M Y') : '—' }}</td>
+            @endif
             <td style="text-align:right;">{{ $item['qty'] }}</td>
             <td style="text-align:right;">{{ number_format($item['rate'], 2) }}</td>
             <td style="text-align:right;">{{ number_format($item['amount'] ?? ($item['qty'] * $item['rate']), 2) }}</td>

@@ -61,6 +61,7 @@ class AuthController extends Controller
             'email'    => $user->email,
             'roles'    => $user->roles->pluck('name')->values(),
             'role'     => $user->roles->pluck('name')->first(), // primary role for badge
+            'page_access' => $user->pageAccess(),               // drives nav + route guard
         ];
     }
 }

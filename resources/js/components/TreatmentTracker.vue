@@ -38,8 +38,8 @@
     </div>
 
     <!-- Assign Modal -->
-    <div v-if="showAssign" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+    <div v-if="showAssign" class="fixed inset-0 bg-black/50 z-50 flex items-stretch md:items-center justify-center p-0 md:p-4">
+      <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-md shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
         <h3 class="font-semibold text-gray-900 mb-4">Assign Treatment</h3>
         <div class="space-y-3">
           <div>

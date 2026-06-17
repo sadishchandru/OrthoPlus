@@ -9,3 +9,42 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* --- Responsive / touch base --- */
+@layer base {
+    /* Snappier taps, no 300ms delay, no double-tap zoom on controls */
+    button, a, input, select, textarea, label, [role="button"] {
+        touch-action: manipulation;
+    }
+    /* Touch targets (>=44px). Applied to block-y controls only — not bare <a>
+       (would turn inline text links into tall blocks) and not native
+       checkbox/radio (would stretch the box). */
+    @media (max-width: 767px) {
+        button, select, [role="button"], input:not([type="checkbox"]):not([type="radio"]) {
+            min-height: 44px;
+        }
+        /* Prevent iOS auto-zoom on focus */
+        input, select, textarea { font-size: 16px; }
+    }
+}
+
+@layer components {
+    /* Wrap any wide <table> in this to get horizontal scroll on small screens */
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    /* Scroll but no visible scrollbar (horizontal tab/nav strips) */
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+}
+
+/* Kill grey tap flash on mobile */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Print: hide app chrome regardless of utility classes */
+@media print {
+    header, nav, aside, .print\:hidden, .no-print { display: none !important; }
+    body { font-size: 12pt; }
+    .print-full { width: 100% !important; }
+}

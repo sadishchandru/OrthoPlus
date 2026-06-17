@@ -9,10 +9,19 @@ use App\Models\Invoice;
 use App\Models\Treatment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class ReportController extends Controller
 {
     public function dashboard(Request $request)
+    {
+        // Cache 2 min — dashboard is read-heavy and tolerates slight staleness.
+        return response()->json(
+            Cache::remember('dashboard_stats_' . now()->toDateString(), 120, fn() => $this->buildDashboard())
+        );
+    }
+
+    private function buildDashboard(): array
     {
         $today = now()->toDateString();
 
@@ -41,14 +50,14 @@ class ReportController extends Controller
             ->limit(10)
             ->get();
 
-        return response()->json([
+        return [
             'today_patients'      => $todayPatients,
             'today_revenue'       => $todayRevenue,
             'pending_invoices'    => $pendingInvoices,
             'total_patients'      => $totalPatients,
             'today_appointments'  => $todayAppointments,
             'low_stock_medicines' => $lowStock,
-        ]);
+        ];
     }
 
     public function therapist(Request $request)

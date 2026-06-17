@@ -61,7 +61,7 @@ async function submit() {
     const user = await auth.login(username.value.trim(), password.value);
     loggedRole.value = user.role || (user.roles?.[0] ?? '');
     toast.success(`Welcome, ${user.name}`);
-    const redirect = router.currentRoute.value.query.redirect || '/';
+    const redirect = router.currentRoute.value.query.redirect || auth.firstAccessiblePath();
     setTimeout(() => router.replace(redirect), 400);
   } catch (e) {
     error.value = e.response?.data?.message || 'Login failed.';

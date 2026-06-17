@@ -10,22 +10,22 @@
         <thead class="bg-gray-50">
           <tr class="text-xs text-gray-500 uppercase">
             <th class="text-left px-4 py-3">Medicine</th>
-            <th class="text-left px-4 py-3">Generic</th>
+            <th class="text-left px-4 py-3 hidden sm:table-cell">Generic</th>
             <th class="text-right px-4 py-3">Stock</th>
-            <th class="text-right px-4 py-3">Price</th>
-            <th class="text-center px-4 py-3">Status</th>
+            <th class="text-right px-4 py-3 hidden sm:table-cell">Price</th>
+            <th class="text-center px-4 py-3 hidden sm:table-cell">Status</th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="med in medicines" :key="med.id" class="border-t border-gray-100 hover:bg-gray-50">
             <td class="px-4 py-3 font-medium text-gray-800">{{ med.name }}</td>
-            <td class="px-4 py-3 text-gray-500">{{ med.generic_name || '—' }}</td>
+            <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ med.generic_name || '—' }}</td>
             <td class="px-4 py-3 text-right" :class="totalStock(med) <= 10 ? 'text-red-600 font-semibold' : 'text-gray-700'">
               {{ totalStock(med) }}
             </td>
-            <td class="px-4 py-3 text-right text-gray-700">₹{{ med.sell_price }}</td>
-            <td class="px-4 py-3 text-center">
+            <td class="px-4 py-3 text-right text-gray-700 hidden sm:table-cell">₹{{ med.sell_price }}</td>
+            <td class="px-4 py-3 text-center hidden sm:table-cell">
               <span
                 :class="totalStock(med) <= 10 ? 'bg-red-100 text-red-700' : totalStock(med) <= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'"
                 class="text-xs px-2 py-0.5 rounded-full font-medium"
@@ -42,8 +42,8 @@
     </div>
 
     <!-- Adjust modal -->
-    <div v-if="showAdjust" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+    <div v-if="showAdjust" class="fixed inset-0 bg-black/50 z-50 flex items-stretch md:items-center justify-center p-0 md:p-4">
+      <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-md shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
         <h3 class="font-semibold text-gray-900 mb-4">Adjust Stock</h3>
         <div class="space-y-3">
           <div v-if="!adjustForm.medicine_id">

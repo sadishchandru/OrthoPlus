@@ -5,13 +5,28 @@
       <span class="text-sm text-gray-500">{{ today }}</span>
     </div>
 
-    <!-- KPI Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- KPI Cards (skeleton while loading) -->
+    <div v-if="loading" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div v-for="i in 4" :key="i" class="bg-white rounded-xl p-4 border border-gray-200 animate-pulse space-y-2">
+        <div class="h-6 w-6 bg-gray-200 rounded"></div>
+        <div class="h-6 w-16 bg-gray-200 rounded"></div>
+        <div class="h-3 w-20 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
       <div v-for="card in kpiCards" :key="card.label" class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
         <div class="text-2xl mb-1">{{ card.icon }}</div>
         <div class="text-2xl font-bold text-gray-900">{{ card.value }}</div>
         <div class="text-xs text-gray-500 mt-1">{{ card.label }}</div>
       </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <router-link to="/patients" class="flex items-center gap-2 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium">➕ New Patient</router-link>
+      <router-link to="/appointments" class="flex items-center gap-2 p-3 rounded-xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium">📅 Appointments</router-link>
+      <router-link to="/doctor-direct" class="flex items-center gap-2 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium">👨‍⚕️ Direct Doctor</router-link>
+      <router-link to="/pharmacy" class="flex items-center gap-2 p-3 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 text-sm font-medium">💊 Pharmacy</router-link>
     </div>
 
     <!-- Today's appointments -->

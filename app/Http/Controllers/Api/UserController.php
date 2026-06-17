@@ -22,7 +22,7 @@ class UserController extends Controller
 
     public function roles()
     {
-        return response()->json(Role::orderBy('name')->get(['id', 'name', 'label']));
+        return response()->json(Role::orderBy('name')->get(['id', 'name', 'label', 'page_access']));
     }
 
     public function store(Request $request)
@@ -34,13 +34,16 @@ class UserController extends Controller
             'password' => 'required|string|min:4',
             'roles'    => 'required|array|min:1',
             'roles.*'  => 'string|exists:roles,name',
+            'page_access'   => 'nullable|array',
+            'page_access.*' => 'string',
         ]);
 
         $user = User::create([
-            'name'     => $data['name'],
-            'username' => $data['username'],
-            'email'    => $data['email'] ?? $data['username'] . '@ortho.local',
-            'password' => Hash::make($data['password']),
+            'name'        => $data['name'],
+            'username'    => $data['username'],
+            'email'       => $data['email'] ?? $data['username'] . '@ortho.local',
+            'password'    => Hash::make($data['password']),
+            'page_access' => $data['page_access'] ?? null,
         ]);
         $user->roles()->sync(Role::whereIn('name', $data['roles'])->pluck('id'));
 
@@ -56,12 +59,15 @@ class UserController extends Controller
             'password' => 'nullable|string|min:4',
             'roles'    => 'required|array|min:1',
             'roles.*'  => 'string|exists:roles,name',
+            'page_access'   => 'nullable|array',
+            'page_access.*' => 'string',
         ]);
 
         $user->fill([
-            'name'     => $data['name'],
-            'username' => $data['username'],
-            'email'    => $data['email'] ?? $user->email,
+            'name'        => $data['name'],
+            'username'    => $data['username'],
+            'email'       => $data['email'] ?? $user->email,
+            'page_access' => $data['page_access'] ?? null,
         ]);
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);

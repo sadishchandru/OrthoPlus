@@ -23,6 +23,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
+        'page_access',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'page_access' => 'array',
         ];
     }
 
@@ -66,5 +68,24 @@ class User extends Authenticatable
     public function roleNames(): array
     {
         return $this->roles->pluck('name')->all();
+    }
+
+    /**
+     * Effective page access. Root role => ['*'] (everything). Else, a per-user
+     * override (page_access column) if set, otherwise the union of the user's
+     * roles' page_access.
+     */
+    public function pageAccess(): array
+    {
+        $this->loadMissing('roles');
+        if ($this->roles->pluck('name')->contains('root')) {
+            return ['*'];
+        }
+        if (!empty($this->page_access)) {
+            return array_values($this->page_access);
+        }
+        return $this->roles
+            ->flatMap(fn($r) => $r->page_access ?? [])
+            ->unique()->values()->all();
     }
 }

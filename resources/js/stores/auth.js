@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', {
         roles: (s) => s.user?.roles || [],
         role: (s) => s.user?.role || null,
         isRoot: (s) => (s.user?.roles || []).includes('root'),
+        pageAccess: (s) => s.user?.page_access || [],
     },
 
     actions: {
@@ -21,6 +22,25 @@ export const useAuthStore = defineStore('auth', {
             if (mine.includes('root')) return true;
             const wanted = roles.flat();
             return wanted.some((r) => mine.includes(r));
+        },
+
+        // Page-level access from role page_access. '*' = everything (root).
+        canAccess(page) {
+            const pa = this.user?.page_access;
+            // Legacy/unrefreshed session (no page_access yet) — don't lock out; fetchMe() will refresh.
+            if (pa == null) return true;
+            return pa.includes('*') || pa.includes(page);
+        },
+
+        // First page this user may land on (post-login), based on page_access.
+        firstAccessiblePath() {
+            const order = [
+                ['dashboard', '/'], ['patients', '/patients'], ['appointments', '/appointments'],
+                ['pharmacy', '/pharmacy'], ['inventory', '/inventory'],
+                ['direct-doctor', '/doctor-direct'], ['settings', '/settings'],
+            ];
+            const hit = order.find(([p]) => this.canAccess(p));
+            return hit ? hit[1] : '/unauthorized';
         },
 
         async login(username, password) {

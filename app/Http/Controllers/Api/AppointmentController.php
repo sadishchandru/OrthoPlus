@@ -21,16 +21,23 @@ class AppointmentController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
-        // Conflict check for therapist
+        // Conflict check for therapist — true time-range overlap.
+        // No end_at column: existing end = scheduled_time + duration_minutes.
+        // Overlap when  newStart < existingEnd  AND  newEnd > existingStart.
         if (!empty($data['therapist_id'])) {
+            $dur      = (int) ($data['duration_minutes'] ?? 30);
+            $newStart = date('H:i:s', strtotime($data['scheduled_time']));
+            $newEnd   = date('H:i:s', strtotime($data['scheduled_time']) + $dur * 60);
+
             $conflict = Appointment::where('therapist_id', $data['therapist_id'])
                 ->where('scheduled_date', $data['scheduled_date'])
-                ->where('scheduled_time', $data['scheduled_time'])
                 ->where('status', '!=', 'cancelled')
+                ->whereRaw('scheduled_time < ?', [$newEnd])
+                ->whereRaw('ADDTIME(scheduled_time, SEC_TO_TIME(COALESCE(duration_minutes, 30) * 60)) > ?', [$newStart])
                 ->exists();
 
             if ($conflict) {
-                return response()->json(['error' => 'Therapist has a conflicting appointment at this time.'], 422);
+                return response()->json(['error' => 'Therapist has a conflicting appointment in this time range.'], 422);
             }
         }
 
@@ -55,18 +62,26 @@ class AppointmentController extends Controller
             ->when($request->therapist_id, fn($q) => $q->where('therapist_id', $request->therapist_id))
             ->where('status', '!=', 'cancelled')
             ->get()
-            ->map(fn($a) => [
+            ->map(function ($a) {
+                // scheduled_date is cast to date (Carbon) — must format to Y-m-d,
+                // else "2026-06-16 00:00:00" concatenates into an invalid ISO string
+                // and FullCalendar silently drops the event.
+                $date = $a->scheduled_date->format('Y-m-d');
+                $time = date('H:i:s', strtotime($a->scheduled_time));
+                $end  = date('H:i:s', strtotime($a->scheduled_time) + ($a->duration_minutes ?? 30) * 60);
+                return [
                 'id'       => $a->id,
                 'title'    => $a->patient->name ?? 'Unknown',
-                'start'    => $a->scheduled_date . 'T' . $a->scheduled_time,
-                'end'      => $a->scheduled_date . 'T' . date('H:i', strtotime($a->scheduled_time) + ($a->duration_minutes ?? 30) * 60),
+                'start'    => $date . 'T' . $time,
+                'end'      => $date . 'T' . $end,
                 'extendedProps' => [
                     'patient'      => $a->patient,
                     'therapist_id' => $a->therapist_id,
                     'status'       => $a->status,
                     'notes'        => $a->notes,
                 ],
-            ]);
+                ];
+            });
 
         return response()->json($appointments);
     }

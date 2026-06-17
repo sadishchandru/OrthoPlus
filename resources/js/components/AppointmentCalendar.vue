@@ -18,8 +18,8 @@
     </div>
 
     <!-- Book Modal -->
-    <div v-if="showBook" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+    <div v-if="showBook" class="fixed inset-0 bg-black/50 z-50 flex items-stretch md:items-center justify-center p-0 md:p-4">
+      <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-md shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
         <h3 class="font-semibold text-gray-900 mb-4">Book Appointment</h3>
         <div class="space-y-3">
           <div>
@@ -72,11 +72,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
 import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
 import PatientSearch from './PatientSearch.vue';
@@ -95,18 +96,25 @@ const bookForm = reactive({
   duration_minutes: '30', therapist_id: '', notes: '',
 });
 
+// 3 tiers: phone <640 = agenda list, tablet <1024 = 3-day, desktop = week
+const tier = (w = window.innerWidth) => (w < 640 ? 'm' : w < 1024 ? 't' : 'd');
+const viewFor = (k) => ({ m: 'listWeek', t: 'timeGridThreeDay', d: 'timeGridWeek' }[k]);
+const toolbarFor = (k) => ({
+  m: { left: 'prev,next', center: 'title', right: 'listWeek,timeGridDay' },
+  t: { left: 'prev,next today', center: 'title', right: 'timeGridDay,timeGridThreeDay' },
+  d: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay' },
+}[k]);
+
 const calOptions = {
-  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
-  initialView: 'timeGridWeek',
-  headerToolbar: {
-    left: 'prev,next today',
-    center: 'title',
-    right: 'dayGridMonth,timeGridWeek,timeGridDay',
-  },
+  plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin],
+  views: { timeGridThreeDay: { type: 'timeGrid', duration: { days: 3 }, buttonText: '3 day' } },
+  initialView: viewFor(tier()),
+  headerToolbar: toolbarFor(tier()),
   slotMinTime: '07:00:00',
   slotMaxTime: '21:00:00',
   allDaySlot: false,
-  height: 600,
+  height: tier() === 'm' ? 'auto' : 600,
+  expandRows: true,
   events: loadEvents,
   dateClick(info) {
     bookForm.scheduled_date = info.dateStr.split('T')[0];
@@ -118,10 +126,25 @@ const calOptions = {
   },
 };
 
+let lastTier = tier();
+function onResize() {
+  const k = tier();
+  if (k === lastTier) return; // only act when crossing a tier boundary
+  lastTier = k;
+  const api = calRef.value?.getApi();
+  if (!api) return;
+  api.changeView(viewFor(k));
+  api.setOption('height', k === 'm' ? 'auto' : 600);
+  api.setOption('headerToolbar', toolbarFor(k));
+}
+
 onMounted(async () => {
+  window.addEventListener('resize', onResize);
   const { data } = await axios.get('/api/therapists').catch(() => ({ data: [] }));
   therapists.value = data;
 });
+
+onBeforeUnmount(() => window.removeEventListener('resize', onResize));
 
 async function loadEvents(fetchInfo, successCb, failureCb) {
   try {

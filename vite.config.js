@@ -17,4 +17,18 @@ export default defineConfig({
             ignored: ['**/storage/framework/views/**'],
         },
     },
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['vue', 'vue-router', 'pinia', 'axios'],
+                    calendar: [
+                        '@fullcalendar/vue3', '@fullcalendar/core', '@fullcalendar/daygrid',
+                        '@fullcalendar/timegrid', '@fullcalendar/list', '@fullcalendar/interaction',
+                    ],
+                },
+            },
+        },
+        chunkSizeWarningLimit: 600,
+    },
 });

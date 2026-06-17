@@ -37,13 +37,26 @@
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <div class="flex items-center justify-between mb-3">
         <h2 class="font-semibold text-gray-700">Bill Items</h2>
-        <div class="flex gap-2">
-          <button @click="addMedRow" class="btn-primary text-xs">+ Medicine</button>
-          <button @click="addAdhocRow" class="btn-ghost text-xs">+ Ad-hoc</button>
-        </div>
+        <button @click="addAdhocRow" class="btn-ghost text-xs">+ Ad-hoc item</button>
       </div>
 
-      <table class="w-full text-sm">
+      <!-- Medicine search — results show Generic Name / HSN Code / Expiry Date inline -->
+      <div class="relative mb-3">
+        <input v-model="medQuery" @input="searchMedGlobal" class="input" placeholder="Search medicine to add (name / generic)…" autocomplete="off" />
+        <div v-if="medResults.length" class="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto">
+          <button v-for="m in medResults" :key="m.id" @click="addMed(m)"
+                  class="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+            <span class="font-medium text-sm text-gray-800">{{ m.name }}</span>
+            <span class="text-gray-500">Generic: {{ m.generic_name || '—' }}</span>
+            <span class="text-gray-500">HSN: {{ m.hsn_code || '—' }}</span>
+            <span class="text-gray-500">Exp: {{ fmtDate(m.expiry_date) }}</span>
+            <span class="text-gray-400 ml-auto">stock {{ m.quantity }} · ₹{{ m.sell_price }}</span>
+          </button>
+        </div>
+        <div v-else-if="medQuery.length >= 2 && medSearched" class="text-xs text-gray-400 mt-1">No medicines found.</div>
+      </div>
+
+      <div class="table-responsive"><table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-400 text-xs border-b">
             <th class="py-1">Item</th><th class="w-20">Qty</th><th class="w-24">Price</th><th class="w-24">Amount</th><th class="w-8"></th>
@@ -52,16 +65,7 @@
         <tbody>
           <tr v-for="(it, i) in items" :key="i" class="border-b border-gray-50">
             <td class="py-1 pr-2">
-              <div v-if="it.medicine_id === undefined" class="relative">
-                <input v-model="it.search" @input="searchMed(i)" class="input" placeholder="Search medicine…" />
-                <div v-if="it.suggestions?.length" class="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-                  <button v-for="m in it.suggestions" :key="m.id" @click="pickMed(i, m)"
-                          class="w-full text-left px-3 py-1.5 hover:bg-blue-50 text-xs">
-                    {{ m.name }} <span class="text-gray-400">· stock {{ m.quantity }} · ₹{{ m.sell_price }}</span>
-                  </button>
-                </div>
-              </div>
-              <input v-else v-model="it.medicine_name" class="input" placeholder="Item name" />
+              <input v-model="it.medicine_name" class="input" placeholder="Item name" />
             </td>
             <td><input v-model.number="it.qty" type="number" min="1" class="input !px-2" /></td>
             <td><input v-model.number="it.unit_price" type="number" step="0.01" class="input !px-2" /></td>
@@ -70,7 +74,7 @@
           </tr>
           <tr v-if="!items.length"><td colspan="5" class="text-gray-400 py-3 text-center">No items. Add medicine or ad-hoc.</td></tr>
         </tbody>
-      </table>
+      </table></div>
 
       <!-- Totals -->
       <div class="flex justify-end mt-4">
@@ -124,13 +128,17 @@ const lastInvoice = ref(null);
 const subtotal = computed(() => items.value.reduce((s, it) => s + (it.qty * it.unit_price || 0), 0));
 const total = computed(() => Math.max(0, subtotal.value - (discount.value || 0) + (tax.value || 0)));
 
+function fmtDate(d) { return d ? String(d).slice(0, 10) : '—'; }
+
 let pt;
 function searchPatient() {
   clearTimeout(pt);
   if (patientQuery.value.length < 2) { patientResults.value = []; return; }
   pt = setTimeout(async () => {
-    const { data } = await axios.get('/api/pharmacy/patients/search', { params: { q: patientQuery.value } });
-    patientResults.value = data;
+    try {
+      const { data } = await axios.get('/api/pharmacy/patients/search', { params: { q: patientQuery.value } });
+      patientResults.value = data;
+    } catch { patientResults.value = []; }
   }, 300);
 }
 
@@ -138,8 +146,10 @@ async function selectPatient(p) {
   patient.value = p;
   patientResults.value = [];
   patientQuery.value = '';
-  const { data } = await axios.get(`/api/pharmacy/patients/${p.id}/prescriptions`);
-  prescriptions.value = data;
+  try {
+    const { data } = await axios.get(`/api/pharmacy/patients/${p.id}/prescriptions`);
+    prescriptions.value = data;
+  } catch { prescriptions.value = []; }
 }
 
 function clearPatient() { patient.value = null; prescriptions.value = []; }
@@ -152,22 +162,29 @@ function loadRx(rx) {
   toast.success('Prescription items loaded.');
 }
 
-function addMedRow() { items.value.push({ search: '', suggestions: [], qty: 1, unit_price: 0 }); }
 function addAdhocRow() { items.value.push({ medicine_id: null, medicine_name: '', qty: 1, unit_price: 0 }); }
 
-let mt = {};
-function searchMed(i) {
-  clearTimeout(mt[i]);
-  const q = items.value[i].search;
-  if (!q || q.length < 2) { items.value[i].suggestions = []; return; }
-  mt[i] = setTimeout(async () => {
-    const { data } = await axios.get('/api/medicines/search', { params: { q } });
-    items.value[i].suggestions = data;
+// Medicine search (above the table — not clipped by overflow)
+const medQuery = ref('');
+const medResults = ref([]);
+const medSearched = ref(false);
+let mt;
+function searchMedGlobal() {
+  clearTimeout(mt);
+  if (medQuery.value.length < 2) { medResults.value = []; medSearched.value = false; return; }
+  mt = setTimeout(async () => {
+    try {
+      const { data } = await axios.get('/api/medicines/search', { params: { q: medQuery.value } });
+      medResults.value = data;
+      medSearched.value = true;
+    } catch { medResults.value = []; }
   }, 300);
 }
-
-function pickMed(i, m) {
-  items.value[i] = { medicine_id: m.id, medicine_name: m.name, qty: 1, unit_price: m.sell_price || 0 };
+function addMed(m) {
+  items.value.push({ medicine_id: m.id, medicine_name: m.name, qty: 1, unit_price: Number(m.sell_price) || 0 });
+  medQuery.value = '';
+  medResults.value = [];
+  medSearched.value = false;
 }
 
 async function save() {
