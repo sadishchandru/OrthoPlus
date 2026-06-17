@@ -12,17 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         if (!Schema::hasTable('medicines')) return;
-        $exists = collect(DB::select('SHOW INDEX FROM medicines'))->pluck('Key_name')->contains('idx_med_search');
-        if (!$exists) {
+        // try/catch instead of SHOW INDEX (not portable across DB drivers).
+        try {
             DB::statement('ALTER TABLE medicines ADD FULLTEXT idx_med_search (name, generic_name)');
+        } catch (\Throwable $e) {
+            // index already exists — skip
         }
     }
 
     public function down(): void
     {
-        $exists = collect(DB::select('SHOW INDEX FROM medicines'))->pluck('Key_name')->contains('idx_med_search');
-        if ($exists) {
+        if (!Schema::hasTable('medicines')) return;
+        try {
             DB::statement('ALTER TABLE medicines DROP INDEX idx_med_search');
+        } catch (\Throwable $e) {
+            // index missing — skip
         }
     }
 };

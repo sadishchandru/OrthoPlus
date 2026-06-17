@@ -94,16 +94,17 @@ return new class extends Migration
         }
     }
 
-    /** Add a composite index only if it does not already exist. */
+    /** Add a composite index; skip if it already exists. DB-agnostic — no SHOW INDEX. */
     private function safeIndex(string $table, array $cols, string $name): void
     {
         if (!Schema::hasTable($table)) return;
         foreach ($cols as $c) {
             if (!Schema::hasColumn($table, $c)) return;
         }
-        $exists = collect(DB::select("SHOW INDEX FROM `{$table}`"))->pluck('Key_name')->contains($name);
-        if (!$exists) {
+        try {
             Schema::table($table, fn(Blueprint $t) => $t->index($cols, $name));
+        } catch (\Throwable $e) {
+            // index already exists — skip
         }
     }
 
