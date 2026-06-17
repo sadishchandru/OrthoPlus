@@ -21,23 +21,25 @@ class AppointmentController extends Controller
             'notes'            => 'nullable|string',
         ]);
 
-        // Conflict check for therapist — true time-range overlap.
-        // No end_at column: existing end = scheduled_time + duration_minutes.
-        // Overlap when  newStart < existingEnd  AND  newEnd > existingStart.
+        // Conflict check for therapist — time-range overlap, computed in PHP so it
+        // works on any DB driver (no ADDTIME/SEC_TO_TIME). Overlap when
+        // newStart < existingEnd AND newEnd > existingStart.
         if (!empty($data['therapist_id'])) {
             $dur      = (int) ($data['duration_minutes'] ?? 30);
-            $newStart = date('H:i:s', strtotime($data['scheduled_time']));
-            $newEnd   = date('H:i:s', strtotime($data['scheduled_time']) + $dur * 60);
+            $newStart = strtotime($data['scheduled_time']);
+            $newEnd   = $newStart + $dur * 60;
 
-            $conflict = Appointment::where('therapist_id', $data['therapist_id'])
+            $sameDay = Appointment::where('therapist_id', $data['therapist_id'])
                 ->where('scheduled_date', $data['scheduled_date'])
                 ->where('status', '!=', 'cancelled')
-                ->whereRaw('scheduled_time < ?', [$newEnd])
-                ->whereRaw('ADDTIME(scheduled_time, SEC_TO_TIME(COALESCE(duration_minutes, 30) * 60)) > ?', [$newStart])
-                ->exists();
+                ->get(['scheduled_time', 'duration_minutes']);
 
-            if ($conflict) {
-                return response()->json(['error' => 'Therapist has a conflicting appointment in this time range.'], 422);
+            foreach ($sameDay as $a) {
+                $es = strtotime($a->scheduled_time);
+                $ee = $es + ((int) ($a->duration_minutes ?? 30)) * 60;
+                if ($newStart < $ee && $newEnd > $es) {
+                    return response()->json(['error' => 'Therapist has a conflicting appointment in this time range.'], 422);
+                }
             }
         }
 

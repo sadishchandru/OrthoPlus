@@ -106,11 +106,14 @@ class PatientController extends Controller
 
     private function generateOpNo(): string
     {
-        $last = Patient::selectRaw("MAX(CAST(SUBSTRING_INDEX(op_number, '-', -1) AS UNSIGNED)) as max_num")
-            ->where('op_number', 'not like', '%-%-%') // exclude revisit OPNos
-            ->value('max_num');
+        // Parse the numeric suffix in PHP (no SUBSTRING_INDEX) — driver-agnostic.
+        $max = Patient::where('op_number', 'like', 'N-%')
+            ->where('op_number', 'not like', '%-%-%') // exclude revisit OPNos (N-79-1)
+            ->pluck('op_number')
+            ->map(fn($op) => (int) (explode('-', $op)[1] ?? 0))
+            ->max();
 
-        return 'N-' . (($last ?? 0) + 1);
+        return 'N-' . ((int) $max + 1);
     }
 
     public function generateRevisitOpNo(Patient $patient): string

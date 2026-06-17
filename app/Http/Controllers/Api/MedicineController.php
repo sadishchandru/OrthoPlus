@@ -30,7 +30,8 @@ class MedicineController extends Controller
         $words = array_filter(explode(' ', $term));
         $ftEligible = collect($words)->contains(fn($w) => strlen($w) >= 3);
 
-        if ($ftEligible) {
+        // FULLTEXT is MySQL-only — skip it on other drivers (SQLite/Postgres) → LIKE.
+        if ($ftEligible && \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'mysql') {
             $expr = collect($words)->map(fn($w) => '+' . $w . '*')->implode(' ');
             $meds = Medicine::where('status', 'active')
                 ->whereRaw('MATCH(name, generic_name) AGAINST(? IN BOOLEAN MODE)', [$expr])
