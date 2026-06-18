@@ -1,31 +1,37 @@
 <template>
-  <div class="relative">
+  <div ref="box" class="relative">
     <input
+      ref="inputEl"
       v-model="query"
       @input="onInput"
-      @focus="open = results.length > 0"
+      @focus="onFocus"
       @keydown.escape="close"
       type="text"
       :placeholder="placeholder"
       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="search"
-      class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+      class="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
     />
 
-    <!-- Loading -->
-    <div v-if="loading" class="absolute right-3 top-2.5">
-      <svg class="animate-spin h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24">
+    <!-- Search icon (tap to open) / loading spinner -->
+    <button type="button" @mousedown.prevent="openFromIcon" class="absolute right-2 top-1.5 w-8 h-8 flex items-center justify-center text-gray-400" aria-label="Search">
+      <svg v-if="loading" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
       </svg>
-    </div>
+      <svg v-else class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"/>
+      </svg>
+    </button>
 
-    <!-- Dropdown -->
-    <div v-if="results.length && open" class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+    <!-- Dropdown — opens on focus/typing, shows loading + empty states -->
+    <div v-show="open && query.length >= 2" class="absolute z-[9999] w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
+      <div v-if="loading" class="px-4 py-3 text-sm text-gray-400">Searching…</div>
+      <div v-else-if="!results.length" class="px-4 py-3 text-sm text-gray-400">No matches</div>
       <button
         v-for="p in results"
         :key="p.id"
         @mousedown.prevent="select(p)"
-        class="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-0"
+        class="w-full text-left px-4 py-3 min-h-11 hover:bg-blue-50 border-b border-gray-100 last:border-0"
       >
         <div class="flex items-center justify-between">
           <div>
@@ -66,7 +72,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
 const props = defineProps({
@@ -80,12 +86,27 @@ const query = ref('');
 const results = ref([]);
 const loading = ref(false);
 const open = ref(false);
+const box = ref(null);
+const inputEl = ref(null);
 let debounceTimer = null;
 
 function onInput() {
   clearTimeout(debounceTimer);
   if (query.value.length < 2) { results.value = []; open.value = false; return; }
+  open.value = true;               // open instantly (loading state) — don't wait for the fetch
   debounceTimer = setTimeout(search, 300);
+}
+
+function onFocus() {
+  if (query.value.length >= 2) {
+    open.value = true;
+    if (!results.value.length) search();
+  }
+}
+
+function openFromIcon() {
+  inputEl.value?.focus();
+  if (query.value.length >= 2) { open.value = true; if (!results.value.length) search(); }
 }
 
 async function search() {
@@ -106,4 +127,8 @@ function select(patient) {
 }
 
 function close() { open.value = false; }
+
+function onOutside(e) { if (box.value && !box.value.contains(e.target)) open.value = false; }
+onMounted(() => document.addEventListener('touchstart', onOutside, true));
+onBeforeUnmount(() => document.removeEventListener('touchstart', onOutside, true));
 </script>

@@ -6,10 +6,12 @@
     <div class="bg-white border border-gray-200 rounded-xl p-4">
       <label class="text-xs font-medium text-gray-600 block mb-1">Patient (OP No / name / phone) — optional for walk-in</label>
       <div class="relative max-w-md">
-        <input v-model="patientQuery" @input="searchPatient" class="input" placeholder="Search patient…" />
-        <div v-if="patientResults.length" class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
+        <input v-model="patientQuery" @input="searchPatient" @focus="searchPatient" autocomplete="off" inputmode="search" class="input" placeholder="Search patient…" />
+        <div v-show="patientQuery.length >= 2 && (patSearching || patientResults.length)"
+             class="absolute z-[9999] w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
+          <div v-if="patSearching && !patientResults.length" class="px-3 py-2 text-sm text-gray-400">Searching…</div>
           <button v-for="p in patientResults" :key="p.id" @mousedown.prevent="selectPatient(p)"
-                  class="w-full text-left px-3 py-2 hover:bg-blue-50 text-sm">
+                  class="w-full text-left px-3 py-3 min-h-11 hover:bg-blue-50 text-sm">
             <span class="font-medium">{{ p.name }}</span>
             <span class="text-gray-500 text-xs ml-2">{{ p.op_number }} · {{ p.phone }}</span>
           </button>
@@ -42,8 +44,10 @@
 
       <!-- Medicine search — results show Generic Name / HSN Code / Expiry Date inline -->
       <div class="relative mb-3">
-        <input v-model="medQuery" @input="searchMedGlobal" class="input" placeholder="Search medicine to add (name / generic)…" autocomplete="off" />
-        <div v-if="medResults.length" class="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto">
+        <input v-model="medQuery" @input="searchMedGlobal" @focus="searchMedGlobal" inputmode="search" class="input" placeholder="Search medicine to add (name / generic)…" autocomplete="off" />
+        <div v-show="medQuery.length >= 2 && (medSearching || medResults.length)"
+             class="absolute z-[9999] w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
+          <div v-if="medSearching && !medResults.length" class="px-3 py-3 text-xs text-gray-400">Searching…</div>
           <button v-for="m in medResults" :key="m.id" @mousedown.prevent="addMed(m)"
                   class="w-full text-left px-3 py-3 min-h-11 hover:bg-blue-50 text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
             <span class="font-medium text-sm text-gray-800">{{ m.name }}</span>
@@ -53,7 +57,7 @@
             <span class="text-gray-400 ml-auto">stock {{ m.quantity }} · ₹{{ m.sell_price }}</span>
           </button>
         </div>
-        <div v-else-if="medQuery.length >= 2 && medSearched" class="text-xs text-gray-400 mt-1">No medicines found.</div>
+        <div v-if="medQuery.length >= 2 && !medSearching && medSearched && !medResults.length" class="text-xs text-gray-400 mt-1">No medicines found.</div>
       </div>
 
       <!-- Desktop: table -->
@@ -134,6 +138,7 @@ const toast = useToast();
 
 const patientQuery = ref('');
 const patientResults = ref([]);
+const patSearching = ref(false);
 const patient = ref(null);
 const prescriptions = ref([]);
 
@@ -152,12 +157,14 @@ function fmtDate(d) { return d ? String(d).slice(0, 10) : '—'; }
 let pt;
 function searchPatient() {
   clearTimeout(pt);
-  if (patientQuery.value.length < 2) { patientResults.value = []; return; }
+  if (patientQuery.value.length < 2) { patientResults.value = []; patSearching.value = false; return; }
+  patSearching.value = true;       // show dropdown instantly with loading state
   pt = setTimeout(async () => {
     try {
       const { data } = await axios.get('/api/pharmacy/patients/search', { params: { q: patientQuery.value } });
       patientResults.value = data;
     } catch { patientResults.value = []; }
+    finally { patSearching.value = false; }
   }, 300);
 }
 
@@ -187,16 +194,19 @@ function addAdhocRow() { items.value.push({ medicine_id: null, medicine_name: ''
 const medQuery = ref('');
 const medResults = ref([]);
 const medSearched = ref(false);
+const medSearching = ref(false);
 let mt;
 function searchMedGlobal() {
   clearTimeout(mt);
-  if (medQuery.value.length < 2) { medResults.value = []; medSearched.value = false; return; }
+  if (medQuery.value.length < 2) { medResults.value = []; medSearched.value = false; medSearching.value = false; return; }
+  medSearching.value = true;       // show dropdown instantly with loading state
   mt = setTimeout(async () => {
     try {
       const { data } = await axios.get('/api/medicines/search', { params: { q: medQuery.value } });
       medResults.value = data;
       medSearched.value = true;
     } catch { medResults.value = []; }
+    finally { medSearching.value = false; }
   }, 300);
 }
 function addMed(m) {
@@ -204,6 +214,7 @@ function addMed(m) {
   medQuery.value = '';
   medResults.value = [];
   medSearched.value = false;
+  medSearching.value = false;
 }
 
 async function save() {
