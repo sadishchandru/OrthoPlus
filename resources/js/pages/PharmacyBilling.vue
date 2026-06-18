@@ -8,7 +8,7 @@
       <div class="relative max-w-md">
         <input v-model="patientQuery" @input="searchPatient" class="input" placeholder="Search patient…" />
         <div v-if="patientResults.length" class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1">
-          <button v-for="p in patientResults" :key="p.id" @click="selectPatient(p)"
+          <button v-for="p in patientResults" :key="p.id" @mousedown.prevent="selectPatient(p)"
                   class="w-full text-left px-3 py-2 hover:bg-blue-50 text-sm">
             <span class="font-medium">{{ p.name }}</span>
             <span class="text-gray-500 text-xs ml-2">{{ p.op_number }} · {{ p.phone }}</span>
@@ -44,7 +44,7 @@
       <div class="relative mb-3">
         <input v-model="medQuery" @input="searchMedGlobal" class="input" placeholder="Search medicine to add (name / generic)…" autocomplete="off" />
         <div v-if="medResults.length" class="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto">
-          <button v-for="m in medResults" :key="m.id" @click="addMed(m)"
+          <button v-for="m in medResults" :key="m.id" @mousedown.prevent="addMed(m)"
                   class="w-full text-left px-3 py-3 min-h-11 hover:bg-blue-50 text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
             <span class="font-medium text-sm text-gray-800">{{ m.name }}</span>
             <span class="text-gray-500">Generic: {{ m.generic_name || '—' }}</span>

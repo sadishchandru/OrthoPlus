@@ -50,7 +50,7 @@
             <label class="text-xs text-gray-600 mb-1 block">Search Medicine</label>
             <input v-model="adjustSearch" @input="searchMeds" type="text" class="input w-full" placeholder="Type to search..." />
             <div v-if="medResults.length" class="mt-1 border border-gray-200 rounded-lg overflow-hidden">
-              <button v-for="m in medResults" :key="m.id" @click="selectMed(m)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0">
+              <button v-for="m in medResults" :key="m.id" @mousedown.prevent="selectMed(m)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0">
                 {{ m.name }} <span class="text-gray-400">({{ m.generic_name }})</span>
               </button>
             </div>

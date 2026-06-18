@@ -13,7 +13,7 @@
         <div class="flex-1 relative">
           <input v-model="item.search" @input="searchMeds(i)" type="text" class="input w-full" placeholder="Search medicine..." />
           <div v-if="item.suggestions?.length" class="absolute z-10 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto">
-            <button v-for="m in item.suggestions" :key="m.id" @click="selectMed(i, m)"
+            <button v-for="m in item.suggestions" :key="m.id" @mousedown.prevent="selectMed(i, m)"
                     class="w-full text-left px-3 py-2 hover:bg-blue-50 text-sm">
               <span class="font-medium">{{ m.name }}</span>
               <span v-if="m.generic_name" class="text-gray-500 ml-2 text-xs">({{ m.generic_name }})</span>

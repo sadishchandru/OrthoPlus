@@ -3,9 +3,11 @@
     <input
       v-model="query"
       @input="onInput"
+      @focus="open = results.length > 0"
       @keydown.escape="close"
       type="text"
       :placeholder="placeholder"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="search"
       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
     />
 
@@ -22,7 +24,7 @@
       <button
         v-for="p in results"
         :key="p.id"
-        @click="select(p)"
+        @mousedown.prevent="select(p)"
         class="w-full text-left px-4 py-3 hover:bg-blue-50 border-b border-gray-100 last:border-0"
       >
         <div class="flex items-center justify-between">
