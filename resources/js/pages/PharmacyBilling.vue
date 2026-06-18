@@ -45,7 +45,7 @@
         <input v-model="medQuery" @input="searchMedGlobal" class="input" placeholder="Search medicine to add (name / generic)…" autocomplete="off" />
         <div v-if="medResults.length" class="absolute z-20 w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto">
           <button v-for="m in medResults" :key="m.id" @click="addMed(m)"
-                  class="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                  class="w-full text-left px-3 py-3 min-h-11 hover:bg-blue-50 text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
             <span class="font-medium text-sm text-gray-800">{{ m.name }}</span>
             <span class="text-gray-500">Generic: {{ m.generic_name || '—' }}</span>
             <span class="text-gray-500">HSN: {{ m.hsn_code || '—' }}</span>
@@ -56,7 +56,8 @@
         <div v-else-if="medQuery.length >= 2 && medSearched" class="text-xs text-gray-400 mt-1">No medicines found.</div>
       </div>
 
-      <div class="table-responsive"><table class="w-full text-sm">
+      <!-- Desktop: table -->
+      <div class="hidden sm:block table-responsive"><table class="w-full text-sm">
         <thead>
           <tr class="text-left text-gray-400 text-xs border-b">
             <th class="py-1">Item</th><th class="w-20">Qty</th><th class="w-24">Price</th><th class="w-24">Amount</th><th class="w-8"></th>
@@ -75,6 +76,24 @@
           <tr v-if="!items.length"><td colspan="5" class="text-gray-400 py-3 text-center">No items. Add medicine or ad-hoc.</td></tr>
         </tbody>
       </table></div>
+
+      <!-- Mobile: stacked cards -->
+      <div class="sm:hidden space-y-2">
+        <div v-for="(it, i) in items" :key="i" class="border border-gray-100 rounded-lg p-2">
+          <div class="flex items-center gap-2">
+            <input v-model="it.medicine_name" class="input flex-1 min-w-0" placeholder="Item name" />
+            <button @click="items.splice(i, 1)" class="text-red-400 hover:text-red-600 w-9 h-9 flex items-center justify-center flex-shrink-0">✕</button>
+          </div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-xs text-gray-400">Qty</span>
+            <input v-model.number="it.qty" type="number" min="1" class="input !px-2 w-16" />
+            <span class="text-xs text-gray-400">₹</span>
+            <input v-model.number="it.unit_price" type="number" step="0.01" class="input !px-2 w-20" />
+            <span class="ml-auto text-sm font-medium">₹{{ (it.qty * it.unit_price || 0).toFixed(2) }}</span>
+          </div>
+        </div>
+        <div v-if="!items.length" class="text-gray-400 py-3 text-center text-sm">No items. Add medicine or ad-hoc.</div>
+      </div>
 
       <!-- Totals -->
       <div class="flex justify-end mt-4">

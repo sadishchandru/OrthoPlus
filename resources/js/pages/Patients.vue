@@ -61,7 +61,7 @@
       <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-2xl shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
           <h3 class="font-semibold text-gray-900">Register New Patient</h3>
-          <button @click="showNew = false" class="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+          <button @click="showNew = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 text-xl flex-shrink-0">✕</button>
         </div>
         <PatientForm
           @created="onCreated"

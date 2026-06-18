@@ -28,7 +28,7 @@
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
       <input v-model="form.address.line1" type="text" class="input mb-2" placeholder="Street address" />
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <input v-model="form.address.city" type="text" class="input" placeholder="City" />
         <input v-model="form.address.state" type="text" class="input" placeholder="State" />
         <input v-model="form.address.pincode" type="text" class="input" placeholder="Pincode" />
@@ -53,9 +53,9 @@
       {{ error }}
     </div>
 
-    <div class="flex justify-end gap-3">
-      <button type="button" @click="$emit('cancel')" class="btn-secondary">Cancel</button>
-      <button type="submit" :disabled="loading" class="btn-primary">
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+      <button type="button" @click="$emit('cancel')" class="btn-secondary w-full sm:w-auto">Cancel</button>
+      <button type="submit" :disabled="loading" class="btn-primary w-full sm:w-auto flex items-center justify-center">
         <span v-if="loading" class="animate-spin mr-2">⌛</span>
         {{ loading ? 'Registering...' : 'Register Patient' }}
       </button>
