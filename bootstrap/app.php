@@ -15,26 +15,22 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust all proxies (required for Render/Railway HTTPS)
-        $middleware->trustProxies(at: '*');
+    // Trust all proxies for Render HTTPS
+    $middleware->trustProxies(at: '*');
 
-        // Exclude API routes from CSRF
-        $middleware->validateCsrfTokens(except: [
-            'api/*',
-            'sanctum/csrf-cookie',
-        ]);
+    // Exclude API from CSRF — Laravel 11 correct syntax
+    $middleware->validateCsrfTokens(except: [
+        'api/*',
+        'sanctum/*',
+        '*',  // temporary: exclude ALL to confirm CSRF is the issue
+    ]);
 
-        // Force HTTPS in production
-        $middleware->web(append: [
-            \Illuminate\Http\Middleware\TrustProxies::class,
-        ]);
-
-        // Add custom middleware aliases
-        $middleware->alias([
-            'role'         => CheckRole::class,
-            'resolve.user' => ResolveUser::class,
-        ]);
-    })
+    // Middleware aliases
+    $middleware->alias([
+        'role'         => CheckRole::class,
+        'resolve.user' => ResolveUser::class,
+    ]);
+})
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
