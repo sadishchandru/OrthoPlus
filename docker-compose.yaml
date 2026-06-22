@@ -16,7 +16,7 @@ services:
     container_name: mysql_server
     environment:
       MYSQL_ROOT_PASSWORD: showme
-      MYSQL_DATABASE: clinic
+      MYSQL_DATABASE: orthoplus
     ports:
       - "3306:3306"
     volumes:
@@ -48,7 +48,7 @@ services:
       - "8001:8000"
     environment:
       DB_HOST: mysql
-      DB_DATABASE: clinic
+      DB_DATABASE: orthoplus
       DB_USERNAME: root
       DB_PASSWORD: showme
     volumes:
