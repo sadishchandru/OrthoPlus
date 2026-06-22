@@ -14,196 +14,233 @@
     </div>
 
     <!-- SVG body map -->
-    <div class="relative w-full max-w-[300px] sm:max-w-[340px] mx-auto border rounded-xl overflow-hidden bg-gray-50 p-2">
+    <div class="relative w-full max-w-[260px] sm:max-w-[300px] mx-auto border rounded-2xl overflow-hidden bg-gradient-to-b from-blue-50 to-gray-50">
       <svg
         ref="svgRef"
-        viewBox="0 0 200 480"
+        viewBox="0 0 200 520"
         xmlns="http://www.w3.org/2000/svg"
-        class="w-full h-auto select-none"
-        style="touch-action: none;"
+        class="w-full h-auto block"
+        style="touch-action:none; display:block;"
       >
+        <!-- Background subtle grid + skin gradients -->
+        <defs>
+          <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#e2e8f0" stroke-width="0.3"/>
+          </pattern>
+          <radialGradient id="skinGrad" cx="50%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#FDDCB5"/>
+            <stop offset="100%" stop-color="#F0B97C"/>
+          </radialGradient>
+          <radialGradient id="skinDark" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#F5C89A"/>
+            <stop offset="100%" stop-color="#E8A870"/>
+          </radialGradient>
+        </defs>
+        <rect width="200" height="520" fill="url(#grid)"/>
+
         <!-- HEAD -->
-        <ellipse cx="100" cy="30" rx="22" ry="26"
-          class="body-part" data-part="head" fill="#FDDCB5"
-          @click="markPart('head')" @touchend.prevent="markPart('head')"/>
+        <ellipse cx="100" cy="38" rx="24" ry="28"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.8"
+          class="body-part" data-part="head"
+          @click="markPart('head','Head')" @touchend.prevent="markPart('head','Head')"/>
+
+        <!-- EARS -->
+        <ellipse cx="76" cy="40" rx="5" ry="7" fill="#F0B97C"
+          class="body-part" data-part="left_ear"
+          @click="markPart('left_ear','Left Ear')" @touchend.prevent="markPart('left_ear','Left Ear')"/>
+        <ellipse cx="124" cy="40" rx="5" ry="7" fill="#F0B97C"
+          class="body-part" data-part="right_ear"
+          @click="markPart('right_ear','Right Ear')" @touchend.prevent="markPart('right_ear','Right Ear')"/>
 
         <!-- NECK -->
-        <rect x="90" y="54" width="20" height="14" rx="4"
-          class="body-part" data-part="neck" fill="#FDDCB5"
-          @click="markPart('neck')" @touchend.prevent="markPart('neck')"/>
+        <rect x="91" y="64" width="18" height="18" rx="6"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="neck"
+          @click="markPart('neck','Neck')" @touchend.prevent="markPart('neck','Neck')"/>
 
-        <!-- LEFT SHOULDER -->
-        <ellipse cx="62" cy="80" rx="16" ry="12"
-          class="body-part" data-part="left_shoulder" fill="#FDDCB5"
-          @click="markPart('left_shoulder')" @touchend.prevent="markPart('left_shoulder')"/>
+        <!-- SHOULDERS -->
+        <ellipse cx="68" cy="88" rx="18" ry="14"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_shoulder"
+          @click="markPart('left_shoulder','Left Shoulder')" @touchend.prevent="markPart('left_shoulder','Left Shoulder')"/>
+        <ellipse cx="132" cy="88" rx="18" ry="14"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_shoulder"
+          @click="markPart('right_shoulder','Right Shoulder')" @touchend.prevent="markPart('right_shoulder','Right Shoulder')"/>
 
-        <!-- RIGHT SHOULDER -->
-        <ellipse cx="138" cy="80" rx="16" ry="12"
-          class="body-part" data-part="right_shoulder" fill="#FDDCB5"
-          @click="markPart('right_shoulder')" @touchend.prevent="markPart('right_shoulder')"/>
-
-        <!-- TORSO (breathe animation) -->
-        <rect x="72" y="68" width="56" height="80" rx="10"
-          class="body-part breathe" data-part="chest" fill="#FDDCB5"
-          @click="markPart('chest')" @touchend.prevent="markPart('chest')"/>
+        <!-- TORSO/CHEST (breathe) -->
+        <path d="M72,82 Q68,88 65,105 L65,165 Q65,175 75,178 L125,178 Q135,175 135,165 L135,105 Q132,88 128,82 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.8"
+          class="body-part breathe" data-part="chest"
+          @click="markPart('chest','Chest')" @touchend.prevent="markPart('chest','Chest')"/>
 
         <!-- ABDOMEN -->
-        <rect x="75" y="145" width="50" height="45" rx="8"
-          class="body-part" data-part="abdomen" fill="#FDDCB5"
-          @click="markPart('abdomen')" @touchend.prevent="markPart('abdomen')"/>
+        <path d="M68,165 Q68,178 75,182 L125,182 Q132,178 132,165 L132,145 L68,145 Z"
+          fill="#FDDCB5" stroke="#E8A870" stroke-width="0.5" opacity="0.8"
+          class="body-part" data-part="abdomen"
+          @click="markPart('abdomen','Abdomen')" @touchend.prevent="markPart('abdomen','Abdomen')"/>
 
-        <!-- LEFT UPPER ARM -->
-        <rect x="44" y="90" width="18" height="45" rx="8"
-          class="body-part" data-part="left_upper_arm" fill="#FDDCB5"
-          @click="markPart('left_upper_arm')" @touchend.prevent="markPart('left_upper_arm')"/>
+        <!-- UPPER ARMS -->
+        <path d="M58,88 Q50,92 46,110 L44,148 Q44,155 50,156 L62,156 Q68,155 68,148 L68,105 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_upper_arm"
+          @click="markPart('left_upper_arm','Left Upper Arm')" @touchend.prevent="markPart('left_upper_arm','Left Upper Arm')"/>
+        <path d="M142,88 Q150,92 154,110 L156,148 Q156,155 150,156 L138,156 Q132,155 132,148 L132,105 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_upper_arm"
+          @click="markPart('right_upper_arm','Right Upper Arm')" @touchend.prevent="markPart('right_upper_arm','Right Upper Arm')"/>
 
-        <!-- RIGHT UPPER ARM -->
-        <rect x="138" y="90" width="18" height="45" rx="8"
-          class="body-part" data-part="right_upper_arm" fill="#FDDCB5"
-          @click="markPart('right_upper_arm')" @touchend.prevent="markPart('right_upper_arm')"/>
+        <!-- ELBOWS -->
+        <ellipse cx="53" cy="156" rx="9" ry="8"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_elbow"
+          @click="markPart('left_elbow','Left Elbow')" @touchend.prevent="markPart('left_elbow','Left Elbow')"/>
+        <ellipse cx="147" cy="156" rx="9" ry="8"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_elbow"
+          @click="markPart('right_elbow','Right Elbow')" @touchend.prevent="markPart('right_elbow','Right Elbow')"/>
 
-        <!-- LEFT ELBOW -->
-        <circle cx="53" cy="138" r="10"
-          class="body-part" data-part="left_elbow" fill="#F5C9A0"
-          @click="markPart('left_elbow')" @touchend.prevent="markPart('left_elbow')"/>
+        <!-- FOREARMS -->
+        <path d="M46,162 Q43,170 42,188 L42,200 Q42,206 48,207 L60,207 Q66,206 66,200 L66,168 Q62,162 56,162 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_forearm"
+          @click="markPart('left_forearm','Left Forearm')" @touchend.prevent="markPart('left_forearm','Left Forearm')"/>
+        <path d="M154,162 Q157,170 158,188 L158,200 Q158,206 152,207 L140,207 Q134,206 134,200 L134,168 Q138,162 144,162 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_forearm"
+          @click="markPart('right_forearm','Right Forearm')" @touchend.prevent="markPart('right_forearm','Right Forearm')"/>
 
-        <!-- RIGHT ELBOW -->
-        <circle cx="147" cy="138" r="10"
-          class="body-part" data-part="right_elbow" fill="#F5C9A0"
-          @click="markPart('right_elbow')" @touchend.prevent="markPart('right_elbow')"/>
-
-        <!-- LEFT FOREARM -->
-        <rect x="44" y="148" width="16" height="40" rx="7"
-          class="body-part" data-part="left_forearm" fill="#FDDCB5"
-          @click="markPart('left_forearm')" @touchend.prevent="markPart('left_forearm')"/>
-
-        <!-- RIGHT FOREARM -->
-        <rect x="140" y="148" width="16" height="40" rx="7"
-          class="body-part" data-part="right_forearm" fill="#FDDCB5"
-          @click="markPart('right_forearm')" @touchend.prevent="markPart('right_forearm')"/>
-
-        <!-- LEFT WRIST -->
-        <rect x="45" y="188" width="14" height="10" rx="4"
-          class="body-part" data-part="left_wrist" fill="#F5C9A0"
-          @click="markPart('left_wrist')" @touchend.prevent="markPart('left_wrist')"/>
-
-        <!-- RIGHT WRIST -->
-        <rect x="141" y="188" width="14" height="10" rx="4"
-          class="body-part" data-part="right_wrist" fill="#F5C9A0"
-          @click="markPart('right_wrist')" @touchend.prevent="markPart('right_wrist')"/>
+        <!-- WRISTS -->
+        <rect x="43" y="206" width="22" height="10" rx="5"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_wrist"
+          @click="markPart('left_wrist','Left Wrist')" @touchend.prevent="markPart('left_wrist','Left Wrist')"/>
+        <rect x="135" y="206" width="22" height="10" rx="5"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_wrist"
+          @click="markPart('right_wrist','Right Wrist')" @touchend.prevent="markPart('right_wrist','Right Wrist')"/>
 
         <!-- LEFT HAND + FINGERS -->
-        <rect x="43" y="198" width="16" height="18" rx="4"
-          class="body-part" data-part="left_hand" fill="#FDDCB5"
-          @click="markPart('left_hand')" @touchend.prevent="markPart('left_hand')"/>
-        <rect x="38" y="213" width="5" height="12" rx="2" class="body-part" data-part="left_finger_1" fill="#FDDCB5" @click="markPart('left_finger_1')" @touchend.prevent="markPart('left_finger_1')"/>
-        <rect x="44" y="212" width="5" height="13" rx="2" class="body-part" data-part="left_finger_2" fill="#FDDCB5" @click="markPart('left_finger_2')" @touchend.prevent="markPart('left_finger_2')"/>
-        <rect x="50" y="212" width="5" height="13" rx="2" class="body-part" data-part="left_finger_3" fill="#FDDCB5" @click="markPart('left_finger_3')" @touchend.prevent="markPart('left_finger_3')"/>
-        <rect x="56" y="213" width="4" height="12" rx="2" class="body-part" data-part="left_finger_4" fill="#FDDCB5" @click="markPart('left_finger_4')" @touchend.prevent="markPart('left_finger_4')"/>
+        <ellipse cx="54" cy="222" rx="11" ry="9"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_hand"
+          @click="markPart('left_hand','Left Hand')" @touchend.prevent="markPart('left_hand','Left Hand')"/>
+        <rect x="38" y="226" width="6" height="14" rx="3" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_thumb" @click="markPart('left_thumb','Left Thumb')" @touchend.prevent="markPart('left_thumb','Left Thumb')"/>
+        <rect x="44" y="224" width="5" height="16" rx="2.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_index" @click="markPart('left_index','Left Index')" @touchend.prevent="markPart('left_index','Left Index')"/>
+        <rect x="50" y="223" width="5" height="17" rx="2.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_middle" @click="markPart('left_middle','Left Middle')" @touchend.prevent="markPart('left_middle','Left Middle')"/>
+        <rect x="56" y="224" width="5" height="16" rx="2.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_ring" @click="markPart('left_ring','Left Ring')" @touchend.prevent="markPart('left_ring','Left Ring')"/>
+        <rect x="62" y="226" width="4" height="13" rx="2" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_pinky" @click="markPart('left_pinky','Left Pinky')" @touchend.prevent="markPart('left_pinky','Left Pinky')"/>
 
         <!-- RIGHT HAND + FINGERS -->
-        <rect x="141" y="198" width="16" height="18" rx="4"
-          class="body-part" data-part="right_hand" fill="#FDDCB5"
-          @click="markPart('right_hand')" @touchend.prevent="markPart('right_hand')"/>
-        <rect x="157" y="213" width="5" height="12" rx="2" class="body-part" data-part="right_finger_1" fill="#FDDCB5" @click="markPart('right_finger_1')" @touchend.prevent="markPart('right_finger_1')"/>
-        <rect x="151" y="212" width="5" height="13" rx="2" class="body-part" data-part="right_finger_2" fill="#FDDCB5" @click="markPart('right_finger_2')" @touchend.prevent="markPart('right_finger_2')"/>
-        <rect x="145" y="212" width="5" height="13" rx="2" class="body-part" data-part="right_finger_3" fill="#FDDCB5" @click="markPart('right_finger_3')" @touchend.prevent="markPart('right_finger_3')"/>
-        <rect x="140" y="213" width="4" height="12" rx="2" class="body-part" data-part="right_finger_4" fill="#FDDCB5" @click="markPart('right_finger_4')" @touchend.prevent="markPart('right_finger_4')"/>
+        <ellipse cx="146" cy="222" rx="11" ry="9"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_hand"
+          @click="markPart('right_hand','Right Hand')" @touchend.prevent="markPart('right_hand','Right Hand')"/>
+        <rect x="156" y="226" width="6" height="14" rx="3" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_thumb" @click="markPart('right_thumb','Right Thumb')" @touchend.prevent="markPart('right_thumb','Right Thumb')"/>
+        <rect x="151" y="224" width="5" height="16" rx="2.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_index" @click="markPart('right_index','Right Index')" @touchend.prevent="markPart('right_index','Right Index')"/>
+        <rect x="145" y="223" width="5" height="17" rx="2.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_middle" @click="markPart('right_middle','Right Middle')" @touchend.prevent="markPart('right_middle','Right Middle')"/>
+        <rect x="139" y="224" width="5" height="16" rx="2.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_ring" @click="markPart('right_ring','Right Ring')" @touchend.prevent="markPart('right_ring','Right Ring')"/>
+        <rect x="134" y="226" width="4" height="13" rx="2" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_pinky" @click="markPart('right_pinky','Right Pinky')" @touchend.prevent="markPart('right_pinky','Right Pinky')"/>
 
-        <!-- PELVIS / HIP -->
-        <rect x="74" y="188" width="52" height="28" rx="10"
-          class="body-part" data-part="pelvis" fill="#FDDCB5"
-          @click="markPart('pelvis')" @touchend.prevent="markPart('pelvis')"/>
+        <!-- PELVIS -->
+        <path d="M72,178 Q70,192 75,198 L125,198 Q130,192 128,178 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.8"
+          class="body-part" data-part="pelvis"
+          @click="markPart('pelvis','Pelvis')" @touchend.prevent="markPart('pelvis','Pelvis')"/>
 
-        <!-- LEFT HIP -->
-        <ellipse cx="76" cy="200" rx="12" ry="14"
-          class="body-part" data-part="left_hip" fill="#F5C9A0"
-          @click="markPart('left_hip')" @touchend.prevent="markPart('left_hip')"/>
+        <!-- HIPS -->
+        <ellipse cx="76" cy="196" rx="14" ry="12"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_hip"
+          @click="markPart('left_hip','Left Hip')" @touchend.prevent="markPart('left_hip','Left Hip')"/>
+        <ellipse cx="124" cy="196" rx="14" ry="12"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_hip"
+          @click="markPart('right_hip','Right Hip')" @touchend.prevent="markPart('right_hip','Right Hip')"/>
 
-        <!-- RIGHT HIP -->
-        <ellipse cx="124" cy="200" rx="12" ry="14"
-          class="body-part" data-part="right_hip" fill="#F5C9A0"
-          @click="markPart('right_hip')" @touchend.prevent="markPart('right_hip')"/>
+        <!-- THIGHS -->
+        <path d="M68,204 Q62,215 60,260 L60,285 Q60,292 70,294 L88,294 Q96,292 96,285 L96,250 Q98,215 92,204 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_thigh"
+          @click="markPart('left_thigh','Left Thigh')" @touchend.prevent="markPart('left_thigh','Left Thigh')"/>
+        <path d="M132,204 Q138,215 140,260 L140,285 Q140,292 130,294 L112,294 Q104,292 104,285 L104,250 Q102,215 108,204 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_thigh"
+          @click="markPart('right_thigh','Right Thigh')" @touchend.prevent="markPart('right_thigh','Right Thigh')"/>
 
-        <!-- LEFT THIGH -->
-        <rect x="72" y="215" width="22" height="60" rx="10"
-          class="body-part" data-part="left_thigh" fill="#FDDCB5"
-          @click="markPart('left_thigh')" @touchend.prevent="markPart('left_thigh')"/>
+        <!-- KNEES -->
+        <ellipse cx="78" cy="294" rx="14" ry="12"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_knee"
+          @click="markPart('left_knee','Left Knee')" @touchend.prevent="markPart('left_knee','Left Knee')"/>
+        <ellipse cx="122" cy="294" rx="14" ry="12"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_knee"
+          @click="markPart('right_knee','Right Knee')" @touchend.prevent="markPart('right_knee','Right Knee')"/>
 
-        <!-- RIGHT THIGH -->
-        <rect x="106" y="215" width="22" height="60" rx="10"
-          class="body-part" data-part="right_thigh" fill="#FDDCB5"
-          @click="markPart('right_thigh')" @touchend.prevent="markPart('right_thigh')"/>
+        <!-- SHINS -->
+        <path d="M65,304 Q62,320 62,360 L62,375 Q62,382 70,383 L88,383 Q94,382 94,375 L94,355 Q96,318 92,304 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_shin"
+          @click="markPart('left_shin','Left Shin')" @touchend.prevent="markPart('left_shin','Left Shin')"/>
+        <path d="M135,304 Q138,320 138,360 L138,375 Q138,382 130,383 L112,383 Q106,382 106,375 L106,355 Q104,318 108,304 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_shin"
+          @click="markPart('right_shin','Right Shin')" @touchend.prevent="markPart('right_shin','Right Shin')"/>
 
-        <!-- LEFT KNEE -->
-        <circle cx="83" cy="280" r="12"
-          class="body-part" data-part="left_knee" fill="#F5C9A0"
-          @click="markPart('left_knee')" @touchend.prevent="markPart('left_knee')"/>
+        <!-- ANKLES -->
+        <ellipse cx="78" cy="384" rx="12" ry="8"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_ankle"
+          @click="markPart('left_ankle','Left Ankle')" @touchend.prevent="markPart('left_ankle','Left Ankle')"/>
+        <ellipse cx="122" cy="384" rx="12" ry="8"
+          fill="url(#skinDark)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_ankle"
+          @click="markPart('right_ankle','Right Ankle')" @touchend.prevent="markPart('right_ankle','Right Ankle')"/>
 
-        <!-- RIGHT KNEE -->
-        <circle cx="117" cy="280" r="12"
-          class="body-part" data-part="right_knee" fill="#F5C9A0"
-          @click="markPart('right_knee')" @touchend.prevent="markPart('right_knee')"/>
+        <!-- LEFT FOOT + TOES -->
+        <path d="M66,390 Q60,394 56,402 L56,410 Q56,416 66,416 L92,416 Q96,414 96,408 L94,394 Q90,390 80,390 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="left_foot"
+          @click="markPart('left_foot','Left Foot')" @touchend.prevent="markPart('left_foot','Left Foot')"/>
+        <ellipse cx="58" cy="417" rx="4" ry="5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_big_toe" @click="markPart('left_big_toe','Left Big Toe')" @touchend.prevent="markPart('left_big_toe','Left Big Toe')"/>
+        <ellipse cx="66" cy="419" rx="3.5" ry="4.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_toe_2" @click="markPart('left_toe_2','Left Toe 2')" @touchend.prevent="markPart('left_toe_2','Left Toe 2')"/>
+        <ellipse cx="73" cy="420" rx="3" ry="4" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_toe_3" @click="markPart('left_toe_3','Left Toe 3')" @touchend.prevent="markPart('left_toe_3','Left Toe 3')"/>
+        <ellipse cx="80" cy="419" rx="3" ry="4" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_toe_4" @click="markPart('left_toe_4','Left Toe 4')" @touchend.prevent="markPart('left_toe_4','Left Toe 4')"/>
+        <ellipse cx="86" cy="418" rx="2.5" ry="3.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="left_toe_5" @click="markPart('left_toe_5','Left Toe 5')" @touchend.prevent="markPart('left_toe_5','Left Toe 5')"/>
 
-        <!-- LEFT SHIN/CALF -->
-        <rect x="73" y="292" width="20" height="65" rx="9"
-          class="body-part" data-part="left_shin" fill="#FDDCB5"
-          @click="markPart('left_shin')" @touchend.prevent="markPart('left_shin')"/>
-
-        <!-- RIGHT SHIN/CALF -->
-        <rect x="107" y="292" width="20" height="65" rx="9"
-          class="body-part" data-part="right_shin" fill="#FDDCB5"
-          @click="markPart('right_shin')" @touchend.prevent="markPart('right_shin')"/>
-
-        <!-- LEFT ANKLE -->
-        <rect x="74" y="356" width="18" height="10" rx="4"
-          class="body-part" data-part="left_ankle" fill="#F5C9A0"
-          @click="markPart('left_ankle')" @touchend.prevent="markPart('left_ankle')"/>
-
-        <!-- RIGHT ANKLE -->
-        <rect x="108" y="356" width="18" height="10" rx="4"
-          class="body-part" data-part="right_ankle" fill="#F5C9A0"
-          @click="markPart('right_ankle')" @touchend.prevent="markPart('right_ankle')"/>
-
-        <!-- LEFT FOOT -->
-        <ellipse cx="80" cy="374" rx="14" ry="8"
-          class="body-part" data-part="left_foot" fill="#FDDCB5"
-          @click="markPart('left_foot')" @touchend.prevent="markPart('left_foot')"/>
-        <circle cx="68" cy="380" r="3" class="body-part" data-part="left_toe_1" fill="#FDDCB5" @click="markPart('left_toe_1')" @touchend.prevent="markPart('left_toe_1')"/>
-        <circle cx="73" cy="382" r="3" class="body-part" data-part="left_toe_2" fill="#FDDCB5" @click="markPart('left_toe_2')" @touchend.prevent="markPart('left_toe_2')"/>
-        <circle cx="79" cy="383" r="3" class="body-part" data-part="left_toe_3" fill="#FDDCB5" @click="markPart('left_toe_3')" @touchend.prevent="markPart('left_toe_3')"/>
-        <circle cx="85" cy="382" r="3" class="body-part" data-part="left_toe_4" fill="#FDDCB5" @click="markPart('left_toe_4')" @touchend.prevent="markPart('left_toe_4')"/>
-        <circle cx="90" cy="380" r="2.5" class="body-part" data-part="left_toe_5" fill="#FDDCB5" @click="markPart('left_toe_5')" @touchend.prevent="markPart('left_toe_5')"/>
-
-        <!-- RIGHT FOOT -->
-        <ellipse cx="120" cy="374" rx="14" ry="8"
-          class="body-part" data-part="right_foot" fill="#FDDCB5"
-          @click="markPart('right_foot')" @touchend.prevent="markPart('right_foot')"/>
-        <circle cx="110" cy="380" r="2.5" class="body-part" data-part="right_toe_5" fill="#FDDCB5" @click="markPart('right_toe_5')" @touchend.prevent="markPart('right_toe_5')"/>
-        <circle cx="115" cy="382" r="3" class="body-part" data-part="right_toe_4" fill="#FDDCB5" @click="markPart('right_toe_4')" @touchend.prevent="markPart('right_toe_4')"/>
-        <circle cx="121" cy="383" r="3" class="body-part" data-part="right_toe_3" fill="#FDDCB5" @click="markPart('right_toe_3')" @touchend.prevent="markPart('right_toe_3')"/>
-        <circle cx="127" cy="382" r="3" class="body-part" data-part="right_toe_2" fill="#FDDCB5" @click="markPart('right_toe_2')" @touchend.prevent="markPart('right_toe_2')"/>
-        <circle cx="132" cy="380" r="3" class="body-part" data-part="right_toe_1" fill="#FDDCB5" @click="markPart('right_toe_1')" @touchend.prevent="markPart('right_toe_1')"/>
+        <!-- RIGHT FOOT + TOES -->
+        <path d="M134,390 Q140,394 144,402 L144,410 Q144,416 134,416 L108,416 Q104,414 104,408 L106,394 Q110,390 120,390 Z"
+          fill="url(#skinGrad)" stroke="#E8A870" stroke-width="0.5"
+          class="body-part" data-part="right_foot"
+          @click="markPart('right_foot','Right Foot')" @touchend.prevent="markPart('right_foot','Right Foot')"/>
+        <ellipse cx="142" cy="417" rx="4" ry="5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_big_toe" @click="markPart('right_big_toe','Right Big Toe')" @touchend.prevent="markPart('right_big_toe','Right Big Toe')"/>
+        <ellipse cx="134" cy="419" rx="3.5" ry="4.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_toe_2" @click="markPart('right_toe_2','Right Toe 2')" @touchend.prevent="markPart('right_toe_2','Right Toe 2')"/>
+        <ellipse cx="127" cy="420" rx="3" ry="4" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_toe_3" @click="markPart('right_toe_3','Right Toe 3')" @touchend.prevent="markPart('right_toe_3','Right Toe 3')"/>
+        <ellipse cx="120" cy="419" rx="3" ry="4" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_toe_4" @click="markPart('right_toe_4','Right Toe 4')" @touchend.prevent="markPart('right_toe_4','Right Toe 4')"/>
+        <ellipse cx="114" cy="418" rx="2.5" ry="3.5" fill="#FDDCB5" stroke="#E8A870" stroke-width="0.4" class="body-part" data-part="right_toe_5" @click="markPart('right_toe_5','Right Toe 5')" @touchend.prevent="markPart('right_toe_5','Right Toe 5')"/>
 
         <!-- SPINE (back view only) -->
         <g v-if="view === 'back'">
-          <rect x="96" y="68" width="8" height="8" rx="2" class="body-part" data-part="cervical_spine" fill="#E8B98A" @click="markPart('cervical_spine')" @touchend.prevent="markPart('cervical_spine')"/>
-          <rect x="96" y="78" width="8" height="30" rx="2" class="body-part" data-part="thoracic_spine" fill="#E8B98A" @click="markPart('thoracic_spine')" @touchend.prevent="markPart('thoracic_spine')"/>
-          <rect x="96" y="110" width="8" height="25" rx="2" class="body-part" data-part="lumbar_spine" fill="#E8B98A" @click="markPart('lumbar_spine')" @touchend.prevent="markPart('lumbar_spine')"/>
-          <rect x="96" y="137" width="8" height="12" rx="2" class="body-part" data-part="sacrum" fill="#E8B98A" @click="markPart('sacrum')" @touchend.prevent="markPart('sacrum')"/>
+          <rect x="95" y="68" width="10" height="8" rx="2" class="body-part" fill="#D4956A" data-part="cervical_1" @click="markPart('cervical_1','C1-C2')" @touchend.prevent="markPart('cervical_1','C1-C2')"/>
+          <rect x="95" y="78" width="10" height="7" rx="2" class="body-part" fill="#D4956A" data-part="cervical_2" @click="markPart('cervical_2','C3-C4')" @touchend.prevent="markPart('cervical_2','C3-C4')"/>
+          <rect x="95" y="87" width="10" height="7" rx="2" class="body-part" fill="#D4956A" data-part="cervical_3" @click="markPart('cervical_3','C5-C7')" @touchend.prevent="markPart('cervical_3','C5-C7')"/>
+          <rect x="95" y="96" width="10" height="25" rx="2" class="body-part" fill="#C8845A" data-part="thoracic" @click="markPart('thoracic','Thoracic Spine')" @touchend.prevent="markPart('thoracic','Thoracic Spine')"/>
+          <rect x="95" y="123" width="10" height="22" rx="2" class="body-part" fill="#C07848" data-part="lumbar" @click="markPart('lumbar','Lumbar Spine')" @touchend.prevent="markPart('lumbar','Lumbar Spine')"/>
+          <rect x="95" y="147" width="10" height="14" rx="2" class="body-part" fill="#B86C3C" data-part="sacrum" @click="markPart('sacrum','Sacrum')" @touchend.prevent="markPart('sacrum','Sacrum')"/>
         </g>
 
-        <!-- PAIN MARKERS (animated pulse) -->
-        <g v-for="(marker, i) in modelValue" :key="i" @click.stop="removeMarker(i)" @touchend.stop.prevent="removeMarker(i)" class="cursor-pointer">
-          <circle
-            :cx="marker.x" :cy="marker.y" r="10"
-            :fill="markerColor(marker.severity, 'glow')"
-            opacity="0.3" class="pulse"/>
-          <circle
-            :cx="marker.x" :cy="marker.y" r="6"
-            :fill="markerColor(marker.severity, 'core')"/>
-          <text :x="marker.x" :y="marker.y + 4" text-anchor="middle"
-                font-size="7" fill="white" font-weight="bold">{{ marker.severity }}</text>
+        <!-- PAIN MARKERS (pulse). Tap to remove. -->
+        <g v-for="m in markers" :key="m.id" class="cursor-pointer"
+           @click.stop="removeMarker(m.id)" @touchend.stop.prevent="removeMarker(m.id)">
+          <circle :cx="m.x" :cy="m.y" r="12"
+            :fill="m.severity === 1 ? '#FCD34D' : m.severity === 2 ? '#FB923C' : '#EF4444'"
+            opacity="0.25" class="pulse"/>
+          <circle :cx="m.x" :cy="m.y" r="7"
+            :fill="m.severity === 1 ? '#D97706' : m.severity === 2 ? '#EA580C' : '#DC2626'"
+            stroke="white" stroke-width="1.5"/>
+          <text :x="m.x" :y="m.y + 3" text-anchor="middle"
+            font-size="7" fill="white" font-weight="bold" pointer-events="none">{{ m.severity }}</text>
         </g>
       </svg>
     </div>
@@ -224,13 +261,13 @@
     </div>
 
     <!-- Marked parts list -->
-    <div v-if="modelValue.length" class="w-full">
+    <div v-if="markers.length" class="w-full">
       <p class="text-xs font-medium text-gray-600 mb-1">Marked areas:</p>
       <div class="flex flex-wrap gap-1">
-        <span v-for="(m, i) in modelValue" :key="i"
+        <span v-for="m in markers" :key="m.id"
           class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-red-50 text-red-700 border border-red-200">
-          {{ (m.label || m.part || 'area').replace(/_/g, ' ') }}
-          <button type="button" @click="removeMarker(i)" class="text-red-400 hover:text-red-600">✕</button>
+          {{ m.label || (m.part || 'area').replace(/_/g, ' ') }}
+          <button type="button" @click="removeMarker(m.id)" class="text-red-400 hover:text-red-600">✕</button>
         </span>
       </div>
     </div>
@@ -238,12 +275,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 // Contract preserved: v-model (modelValue / update:modelValue) so PatientDetail &
 // DirectDoctorMode `v-model="record.body_map"` keep saving the same JSON column.
-// Marker shape is a superset of the old {x,y,severity,label} (adds `part`), so
-// existing records and the print template still render.
+// `markers` mirrors modelValue; superset shape {part,label,x,y,severity} stays
+// backward compatible with old {x,y,severity,label} records + the print template.
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
 });
@@ -252,51 +289,65 @@ const emit = defineEmits(['update:modelValue']);
 const svgRef = ref(null);
 const selectedSeverity = ref(1);
 const view = ref('front');
+// Backfill ids for legacy points ({x,y,severity,label} with no id) so v-for keys
+// stay unique and removeMarker(id) works.
+let seq = 0;
+const withIds = (arr) => (arr || []).map((m) => (m.id != null ? m : { ...m, id: `legacy-${++seq}` }));
+const markers = ref(withIds(props.modelValue));
 
-function markerColor(s, kind) {
-  if (kind === 'glow') return s === 1 ? '#FCD34D' : s === 2 ? '#FB923C' : '#EF4444';
-  return s === 1 ? '#F59E0B' : s === 2 ? '#EA580C' : '#DC2626';
-}
+// External changes (e.g. parent reset to []) → resync internal state.
+watch(() => props.modelValue, (val) => {
+  if (JSON.stringify(val) !== JSON.stringify(markers.value)) {
+    markers.value = withIds(val);
+  }
+});
 
-function markPart(partName) {
-  const el = svgRef.value?.querySelector(`[data-part="${partName}"]`);
+function markPart(partId, partLabel) {
+  const el = svgRef.value?.querySelector(`[data-part="${partId}"]`);
   if (!el) return;
-  const bbox = el.getBBox();
-  const x = Math.round(bbox.x + bbox.width / 2);
-  const y = Math.round(bbox.y + bbox.height / 2);
+  const bbox = el.getBBox ? el.getBBox() : { x: 0, y: 0, width: 20, height: 20 };
+  const cx = Math.round(bbox.x + bbox.width / 2);
+  const cy = Math.round(bbox.y + bbox.height / 2);
 
   // Toggle: tap an already-marked part to clear it.
-  const idx = props.modelValue.findIndex((m) => m.part === partName);
+  const idx = markers.value.findIndex((m) => m.part === partId);
   if (idx >= 0) {
-    const updated = [...props.modelValue];
-    updated.splice(idx, 1);
-    emit('update:modelValue', updated);
+    markers.value.splice(idx, 1);
+    emit('update:modelValue', markers.value);
     return;
   }
-  emit('update:modelValue', [
-    ...props.modelValue,
-    { part: partName, x, y, severity: selectedSeverity.value, label: partName.replace(/_/g, ' ') },
-  ]);
+  markers.value.push({
+    id: Date.now(),
+    part: partId,
+    label: partLabel,
+    x: cx,
+    y: cy,
+    severity: selectedSeverity.value,
+  });
+  emit('update:modelValue', markers.value);
 }
 
-function removeMarker(i) {
-  const updated = [...props.modelValue];
-  updated.splice(i, 1);
-  emit('update:modelValue', updated);
+function removeMarker(id) {
+  markers.value = markers.value.filter((m) => m.id !== id);
+  emit('update:modelValue', markers.value);
 }
 </script>
 
 <style scoped>
-.body-part { cursor: pointer; transition: fill 0.2s, filter 0.2s; }
-.body-part:hover { filter: brightness(0.92); }
-.breathe { animation: breathe 3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
-@keyframes breathe {
-  0%, 100% { transform: scaleY(1); }
-  50% { transform: scaleY(1.015); }
+.body-part { cursor: pointer; transition: filter 0.15s; }
+.body-part:hover, .body-part:active { filter: brightness(0.85) saturate(1.3); }
+.breathe {
+  animation: breathe 4s ease-in-out infinite;
+  transform-origin: 100px 125px;
+  transform-box: view-box;
 }
-.pulse { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  50% { transform: scaleX(1.02) scaleY(1.01); }
+}
+.pulse { animation: pulse 2s ease-in-out infinite; }
 @keyframes pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.1; }
+  0%, 100% { r: 12; opacity: 0.25; }
+  50% { r: 16; opacity: 0.1; }
 }
 </style>

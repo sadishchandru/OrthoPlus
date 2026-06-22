@@ -115,7 +115,17 @@ Open unless noted. Auth: `/auth/{login,me,logout}`.
 - Print (Blade) `/print/{type}/{id}?lang=en|ta|hi`: patient_record, soap_note, exercise_sheet, prescription, invoice (pharmacy bills show Generic/HSN/Expiry + Walk-in), consent_form, layout. Lang `resources/lang/{en,ta,hi}/print.php`.
 
 ### Responsive
-Top navbar (not sidebar). White sticky header `min-h-[3.5rem]`. Nav `hidden sm:flex flex-nowrap justify-center overflow-x-auto scrollbar-hide` (single row, scrolls, never wraps), filtered by `canAccess`. `<sm`: hamburger → left drawer (teleport) + fixed bottom nav. Modals fullscreen `<md`. Calendar 3 tiers (<640 listWeek, <1024 timeGridThreeDay, else timeGridWeek + resize swap). BodyMap responsive SVG + touch. `app.css` base: `touch-action:manipulation`, inputs 16px <768 (no iOS zoom), 44px tap targets, `.scrollbar-hide`, `.table-responsive`, print hides chrome.
+Top navbar (not sidebar). White sticky header `min-h-[3.5rem]`. Nav `hidden sm:flex flex-nowrap justify-center overflow-x-auto scrollbar-hide` (single row, scrolls, never wraps), filtered by `canAccess`. `<sm`: hamburger → left drawer (teleport) + fixed bottom nav. Modals fullscreen `<md`. Calendar 3 tiers (<640 listWeek, <1024 timeGridThreeDay, else timeGridWeek + resize swap). `app.css` base: `touch-action:manipulation`, inputs 16px <768 (no iOS zoom), 44px tap targets, `.scrollbar-hide`, `.table-responsive`, print hides chrome.
+
+**Breakpoints (Tailwind v4 — no JS config, defined in `app.css @theme`):** `sm/md/lg/xl` keep TW defaults (640/768/1024/1280); added `--breakpoint-xs:320px`, `--breakpoint-2xl:1440px`, `--breakpoint-3xl:1920px`. NOT global `overflow-x:hidden` on html/body — breaks the sticky header (v4 spec computes cross-axis overflow to `auto`); fix overflow at source instead.
+
+**Page patterns (audited 320/768/1024/1440):**
+- Tables → `overflow-x-auto` + hide low-priority cols `<sm` (InventoryTable), or desktop table / mobile stacked cards (PharmacyBilling).
+- 12-col line-item rows (InvoiceForm, PrescriptionForm services) → stack on mobile via `col-span-12 sm:col-span-N`, header `hidden sm:grid`.
+- Multi-col grids → `grid-cols-1 sm:grid-cols-3` (TreatmentTracker kanban), `grid-cols-3 sm:grid-cols-6` (TherapistForm schedule).
+- Tab strips → `flex overflow-x-auto scrollbar-hide` + `flex-shrink-0 whitespace-nowrap` (PatientDetail).
+
+**BodyMap** (`components/BodyMap.vue`): full-body SVG `viewBox 0 0 200 480`, `max-w-[300px] sm:max-w-[340px]`. Detailed anatomy (fingers/toes/spine segments), Front/Back toggle (spine back-only), tap-to-mark per `data-part` (`getBBox` center), tap marker to remove, breathing torso (`transform-box:fill-box`) + pulse markers. Keeps `v-model` contract (`modelValue`/`update:modelValue`, parents `v-model="record.body_map"`); marker shape superset of old `{x,y,severity,label}` (+`part`) → old records + print still render.
 
 ### Performance
 Vite `manualChunks`: `vendor`(vue/router/pinia/axios) + `calendar`(fullcalendar) → **app.js 184KB→29KB** (calendar lazy). Route lazy-loading. Dashboard skeleton. DB indexes + `Cache::remember` (dashboard 120s, treatment_catalog/therapists 60m).
@@ -130,7 +140,7 @@ This repo (`OrthoPlus`) is **Laravel/Vue**. A separate sibling project **`AyuPlu
 
 ## 7. Known gotchas / pending
 
-- **Tailwind v4:** scoped `<style>` using `@apply` needs `@reference "tailwindcss";` first line.
+- **Tailwind v4:** scoped `<style>` using `@apply` needs `@reference "tailwindcss";` first line. Breakpoints live in `app.css @theme` (`--breakpoint-*`), not a `tailwind.config.js`.
 - **Appointments:** schema uses `scheduled_date`+`scheduled_time`+`duration_minutes` (NOT `start_at`/`end_at`). Calendar event `start` MUST format date `Y-m-d` (Carbon date cast else invalid ISO → events silently dropped). Conflict check = true time-range overlap via `ADDTIME`.
 - **Auth is frontend-enforced** (router guard + nav). API routes mostly open. For real backend enforcement → add Sanctum + per-route gates (bigger job).
 - Editing a user's roles/pages → that user must **re-login** (or next-load `fetchMe`) to pick up access.
