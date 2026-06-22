@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
-      <input v-model="query" @input="load" type="text" class="input w-72" placeholder="Search medicines..." />
-      <button @click="showAdjust = true" class="btn-primary">+ Adjust Stock</button>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <input v-model="query" @input="load" type="text" class="input w-full sm:w-72" placeholder="Search medicines..." />
+      <button @click="showAdjust = true" class="btn-primary flex-shrink-0">+ Adjust Stock</button>
     </div>
 
     <div class="overflow-x-auto rounded-xl border border-gray-200">

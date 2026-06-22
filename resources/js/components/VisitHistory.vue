@@ -32,7 +32,7 @@
         <!-- Accordion body -->
         <div v-if="open.has(visit.id)" class="px-4 py-4 space-y-4">
           <!-- SOAP -->
-          <div v-if="visit.soap_notes" class="grid grid-cols-2 gap-3">
+          <div v-if="visit.soap_notes" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div v-for="key in ['subjective','objective','assessment','plan']" :key="key" v-if="visit.soap_notes[key]">
               <div class="text-xs font-semibold uppercase text-gray-400 mb-1">{{ key }}</div>
               <p class="text-sm text-gray-700 whitespace-pre-line">{{ visit.soap_notes[key] }}</p>

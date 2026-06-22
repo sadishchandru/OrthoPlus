@@ -4,7 +4,7 @@
 
     <!-- Line items -->
     <div class="space-y-2">
-      <div class="grid grid-cols-12 gap-2 text-xs text-gray-500 font-medium uppercase px-1">
+      <div class="hidden sm:grid grid-cols-12 gap-2 text-xs text-gray-500 font-medium uppercase px-1">
         <span class="col-span-5">Description</span>
         <span class="col-span-2 text-right">Qty</span>
         <span class="col-span-2 text-right">Rate (₹)</span>
@@ -12,10 +12,10 @@
         <span class="col-span-1"></span>
       </div>
       <div v-for="(item, i) in items" :key="i" class="grid grid-cols-12 gap-2 items-center">
-        <input v-model="item.description" type="text" class="input col-span-5" placeholder="Service/item" />
-        <input v-model.number="item.qty" type="number" min="1" class="input col-span-2 text-right" />
-        <input v-model.number="item.rate" type="number" min="0" class="input col-span-2 text-right" />
-        <div class="col-span-2 text-right text-sm font-medium text-gray-700">
+        <input v-model="item.description" type="text" class="input col-span-12 sm:col-span-5" placeholder="Service/item" />
+        <input v-model.number="item.qty" type="number" min="1" class="input col-span-4 sm:col-span-2 text-right" placeholder="Qty" />
+        <input v-model.number="item.rate" type="number" min="0" class="input col-span-4 sm:col-span-2 text-right" placeholder="Rate (₹)" />
+        <div class="col-span-3 sm:col-span-2 text-right text-sm font-medium text-gray-700">
           ₹{{ ((item.qty || 0) * (item.rate || 0)).toFixed(0) }}
         </div>
         <button @click="items.splice(i, 1)" type="button" class="col-span-1 text-gray-300 hover:text-red-500 text-center">✕</button>

@@ -46,7 +46,7 @@
           <label class="text-xs font-medium text-gray-600">Schedule</label>
           <button @click="addSlot" type="button" class="text-xs text-blue-600">+ Add day</button>
         </div>
-        <div v-for="(s, i) in form.schedule" :key="i" class="grid grid-cols-6 gap-1 mb-1 items-center">
+        <div v-for="(s, i) in form.schedule" :key="i" class="grid grid-cols-3 sm:grid-cols-6 gap-1 mb-1 items-center">
           <select v-model="s.day" class="input !px-1 text-xs">
             <option v-for="d in days" :key="d">{{ d }}</option>
           </select>
