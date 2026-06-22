@@ -44,7 +44,12 @@
               <div class="text-xs text-gray-400">{{ p.phone }} · {{ p.gender }}</div>
             </div>
           </div>
-          <div class="text-right">
+          <div class="text-right flex items-center gap-2">
+            <span v-if="p.visit_type"
+              :class="p.visit_type === 'new' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+              class="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase">
+              {{ p.visit_type === 'new' ? 'New' : 'Revisit' }}
+            </span>
             <div class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{{ p.op_number }}</div>
           </div>
         </router-link>

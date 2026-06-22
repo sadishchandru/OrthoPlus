@@ -8,7 +8,7 @@ class Appointment extends Model
 {
     protected $fillable = [
         'patient_id', 'therapist_id', 'visit_id',
-        'appointment_number', 'scheduled_date', 'scheduled_time',
+        'appointment_number', 'scheduled_date', 'scheduled_time', 'token_number',
         'duration_minutes', 'service_id', 'resource_id',
         'commission_percentage', 'is_recurring', 'recurrence_rule',
         'status', 'reminder_sent_at', 'is_waitlisted', 'notes',

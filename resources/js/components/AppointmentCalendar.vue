@@ -23,23 +23,44 @@
         <h3 class="font-semibold text-gray-900 mb-4">Book Appointment</h3>
         <div class="space-y-3">
           <div>
-            <label class="text-xs text-gray-600 mb-1 block">Patient</label>
-            <PatientSearch @select="bookForm.patient_id = $event.id; bookForm.patientName = $event.name" />
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs text-gray-600 block">Patient</label>
+              <div class="flex gap-1">
+                <button type="button" @click="bookMode = 'search'"
+                  :class="bookMode === 'search' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'"
+                  class="text-xs px-2 py-1 rounded-full">Existing</button>
+                <button type="button" @click="bookMode = 'new'"
+                  :class="bookMode === 'new' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'"
+                  class="text-xs px-2 py-1 rounded-full">New</button>
+              </div>
+            </div>
+            <PatientSearch v-if="bookMode === 'search'" @select="selectPatient" />
+            <PatientForm v-else @created="onNewPatient" @cancel="bookMode = 'search'" />
+
+            <!-- Chosen patient + new/revisit tag -->
+            <div v-if="bookForm.patient_id && bookMode === 'search'" class="mt-2 flex items-center gap-2 text-sm">
+              <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{{ bookForm.patientName }}</span>
+              <span v-if="bookForm.visitType"
+                :class="bookForm.visitType === 'new' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+                class="px-2 py-0.5 rounded-full text-xs font-medium uppercase">
+                {{ bookForm.visitType === 'new' ? 'New' : 'Revisit' }}
+              </span>
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="text-xs text-gray-600 mb-1 block">Date</label>
-              <input v-model="bookForm.scheduled_date" type="date" class="input w-full" />
+              <input v-model="bookForm.scheduled_date" @change="checkSlot" type="date" class="input w-full" />
             </div>
             <div>
               <label class="text-xs text-gray-600 mb-1 block">Time</label>
-              <input v-model="bookForm.scheduled_time" type="time" class="input w-full" />
+              <input v-model="bookForm.scheduled_time" @change="checkSlot" type="time" class="input w-full" />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="text-xs text-gray-600 mb-1 block">Duration</label>
-              <select v-model="bookForm.duration_minutes" class="input w-full">
+              <select v-model="bookForm.duration_minutes" @change="checkSlot" class="input w-full">
                 <option value="15">15 min</option>
                 <option value="30">30 min</option>
                 <option value="45">45 min</option>
@@ -48,7 +69,7 @@
             </div>
             <div>
               <label class="text-xs text-gray-600 mb-1 block">Therapist</label>
-              <select v-model="bookForm.therapist_id" class="input w-full">
+              <select v-model="bookForm.therapist_id" @change="checkSlot" class="input w-full">
                 <option value="">Any</option>
                 <option v-for="t in therapists" :key="t.id" :value="t.id">{{ t.name }}</option>
               </select>
@@ -58,6 +79,10 @@
             <label class="text-xs text-gray-600 mb-1 block">Notes</label>
             <input v-model="bookForm.notes" type="text" class="input w-full" placeholder="Optional notes..." />
           </div>
+        </div>
+        <div v-if="slotMessage" :class="slotAvailable ? 'text-green-600' : 'text-red-600'"
+             class="text-xs mt-2 flex items-center gap-1">
+          {{ slotAvailable ? '✓' : '⚠' }} {{ slotMessage }}
         </div>
         <div v-if="bookError" class="mt-3 text-sm text-red-600">{{ bookError }}</div>
         <div class="flex justify-end gap-2 mt-4">
@@ -81,6 +106,7 @@ import listPlugin from '@fullcalendar/list';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
 import PatientSearch from './PatientSearch.vue';
+import PatientForm from './PatientForm.vue';
 
 const toast = useToast();
 const calRef = ref(null);
@@ -89,9 +115,50 @@ const therapists = ref([]);
 const showBook = ref(false);
 const booking = ref(false);
 const bookError = ref('');
+const slotAvailable = ref(true);
+const slotMessage = ref('');
+const bookMode = ref('search'); // 'search' = existing patient, 'new' = register inline
+
+// Existing patient picked from search.
+function selectPatient(p) {
+  bookForm.patient_id = p.id;
+  bookForm.patientName = p.name;
+  bookForm.visitType = p.visit_type || (p.visit_count > 0 ? 'revisit' : 'new');
+}
+
+// New patient registered inline → select + back to search view.
+function onNewPatient(patient) {
+  bookForm.patient_id = patient.id;
+  bookForm.patientName = patient.name;
+  bookForm.visitType = 'new';
+  bookMode.value = 'search';
+  toast.success(`Patient registered: ${patient.op_number}`);
+}
+
+// Live therapist-slot availability (only when a specific therapist is chosen).
+let availTimer = null;
+function checkSlot() {
+  clearTimeout(availTimer);
+  slotMessage.value = '';
+  if (!bookForm.therapist_id || !bookForm.scheduled_date || !bookForm.scheduled_time) return;
+  availTimer = setTimeout(async () => {
+    try {
+      const { data } = await axios.get('/api/appointments/check-availability', {
+        params: {
+          therapist_id: bookForm.therapist_id,
+          scheduled_date: bookForm.scheduled_date,
+          scheduled_time: bookForm.scheduled_time,
+          duration_minutes: bookForm.duration_minutes,
+        },
+      });
+      slotAvailable.value = data.available;
+      slotMessage.value = data.message;
+    } catch { slotMessage.value = ''; }
+  }, 300);
+}
 
 const bookForm = reactive({
-  patient_id: null, patientName: '',
+  patient_id: null, patientName: '', visitType: '',
   scheduled_date: '', scheduled_time: '',
   duration_minutes: '30', therapist_id: '', notes: '',
 });
@@ -119,10 +186,14 @@ const calOptions = {
   dateClick(info) {
     bookForm.scheduled_date = info.dateStr.split('T')[0];
     bookForm.scheduled_time = info.dateStr.split('T')[1]?.slice(0, 5) || '09:00';
+    slotMessage.value = '';
+    bookMode.value = 'search';
     showBook.value = true;
+    checkSlot();
   },
   eventClick(info) {
-    toast.info(`${info.event.title} — ${info.event.extendedProps.status}`);
+    const tok = info.event.extendedProps.token_number;
+    toast.info(`${tok ? 'Token #' + tok + ' · ' : ''}${info.event.title} — ${info.event.extendedProps.status}`);
   },
 };
 
@@ -168,9 +239,11 @@ async function submitBook() {
   booking.value = true;
   bookError.value = '';
   try {
-    await axios.post('/api/appointments', bookForm);
+    const { data } = await axios.post('/api/appointments', bookForm);
     showBook.value = false;
-    toast.success('Appointment booked.');
+    const tag = data.visit_type === 'revisit' ? 'Revisit' : 'New';
+    toast.success(`Booked · ${tag} · Token #${data.token_number}`);
+    bookForm.patient_id = null; bookForm.patientName = ''; bookForm.visitType = '';
     calRef.value?.getApi().refetchEvents();
   } catch (e) {
     bookError.value = e.response?.data?.error || 'Failed to book appointment.';
@@ -185,4 +258,11 @@ async function submitBook() {
 .input { @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none; }
 .btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
 .btn-secondary { @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
+
+/* Mobile: keep the calendar header on one row — title was wrapping over prev/next. */
+:deep(.fc-toolbar-title) { font-size: clamp(0.9rem, 3vw, 1.25rem) !important; }
+@media (max-width: 640px) {
+  :deep(.fc-button) { padding: 4px 8px !important; font-size: 0.75rem !important; }
+  :deep(.fc-toolbar.fc-header-toolbar) { gap: 0.25rem; margin-bottom: 0.75rem; }
+}
 </style>

@@ -34,6 +34,7 @@ Route::prefix('patients')->group(function () {
 
 Route::prefix('appointments')->group(function () {
     Route::get('/calendar', [AppointmentController::class, 'calendar']);
+    Route::get('/check-availability', [AppointmentController::class, 'checkAvailability']);
     Route::post('/', [AppointmentController::class, 'store']);
     Route::put('/{appointment}', [AppointmentController::class, 'update']);
 });

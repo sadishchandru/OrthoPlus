@@ -183,4 +183,12 @@ class Patient extends Model
     {
         return $this->hasMany(Visit::class, 'type', 'visit');
     }
+
+    /**
+     * Clinical records (the visit history). Count drives new vs revisit.
+     */
+    public function clinicalRecords()
+    {
+        return $this->hasMany(ClinicalRecord::class);
+    }
 }

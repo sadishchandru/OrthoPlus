@@ -33,7 +33,13 @@
           {{ patient.name?.charAt(0) }}
         </div>
         <div>
-          <div class="font-semibold text-blue-900">{{ patient.name }}</div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-blue-900">{{ patient.name }}</span>
+            <span :class="(patient.visit_type || 'new') === 'new' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+              class="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase">
+              {{ (patient.visit_type || 'new') === 'new' ? 'New' : 'Revisit' }}
+            </span>
+          </div>
           <div class="text-sm text-blue-700">{{ patient.op_number }} · {{ patient.phone }}</div>
         </div>
       </div>
@@ -56,8 +62,8 @@
           <VASSlider v-model="record.vas_score" />
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="max-h-[320px] md:max-h-none overflow-auto">
-              <BodyMap v-model="record.body_map" />
+            <div class="w-full">
+              <BodyMap v-model="record.body_map" :gender="patient?.gender || 'male'" />
             </div>
             <SOAPNotes v-model="record.soap_notes" />
           </div>

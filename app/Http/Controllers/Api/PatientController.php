@@ -15,6 +15,7 @@ class PatientController extends Controller
     {
         $q = $request->get('q') ?? $request->get('search');
         $patients = Patient::query()
+            ->withCount('clinicalRecords')
             ->when($q, fn($query) => $query->where(function ($query) use ($q) {
                 $query->where('name', 'like', "%$q%")
                       ->orWhere('phone', 'like', "%$q%")
@@ -22,6 +23,13 @@ class PatientController extends Controller
             }))
             ->orderByDesc('created_at')
             ->paginate(15);
+
+        // new vs revisit from prior clinical records.
+        $patients->getCollection()->transform(function ($p) {
+            $p->visit_count = $p->clinical_records_count;
+            $p->visit_type  = $p->clinical_records_count > 0 ? 'revisit' : 'new';
+            return $p;
+        });
 
         return response()->json($patients);
     }
@@ -76,6 +84,9 @@ class PatientController extends Controller
             ->orderByDesc('created_at')
             ->get());
 
+        $patient->visit_count = $patient->visits->count();
+        $patient->visit_type  = $patient->visit_count > 0 ? 'revisit' : 'new';
+
         return response()->json($patient);
     }
 
@@ -97,9 +108,14 @@ class PatientController extends Controller
         $patients = Patient::where('name', 'like', "%$q%")
             ->orWhere('phone', 'like', "%$q%")
             ->orWhere($opCol, 'like', "%$q%")
+            ->withCount('clinicalRecords')
             ->limit(10)
             ->get(array_filter(['id', 'name', 'phone', $opCol, 'gender', 'dob']))
-            ->map(fn($p) => array_merge($p->toArray(), ['op_number' => $p->$opCol]));
+            ->map(fn($p) => array_merge($p->toArray(), [
+                'op_number'   => $p->$opCol,
+                'visit_count' => $p->clinical_records_count,
+                'visit_type'  => $p->clinical_records_count > 0 ? 'revisit' : 'new',
+            ]));
 
         return response()->json($patients);
     }

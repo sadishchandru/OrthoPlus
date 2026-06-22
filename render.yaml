@@ -1,0 +1,89 @@
+# Exported from Render on 2026-06-22T13:34:03Z
+version: "1"
+projects:
+- name: OrthoPlus
+  environments:
+  - name: Production
+    services:
+    - type: web
+      name: OrthoPlus
+      runtime: node
+      repo: https://github.com/sadishchandru/OrthoPlus
+      plan: free
+      envVars:
+      - key: SESSION_PATH
+        sync: false
+      - key: SESSION_LIFETIME
+        sync: false
+      - key: SESSION_ENCRYPT
+        sync: false
+      - key: SESSION_DRIVER
+        sync: false
+      - key: SESSION_DOMAIN
+        sync: false
+      - key: QUEUE_CONNECTION
+        sync: false
+      - key: PORT
+        sync: false
+      - key: MAIL_MAILER
+        sync: false
+      - key: LOG_LEVEL
+        sync: false
+      - key: LOG_CHANNEL
+        sync: false
+      - key: FORCE_HTTPS
+        sync: false
+      - key: FILESYSTEM_DISK
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_CONNECTION
+        sync: false
+      - key: CACHE_STORE
+        sync: false
+      - key: BROADCAST_CONNECTION
+        sync: false
+      - key: BCRYPT_ROUNDS
+        sync: false
+      - key: ASSET_URL
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: APP_NAME
+        sync: false
+      - key: APP_MAINTENANCE_DRIVER
+        sync: false
+      - key: APP_LOCALE
+        sync: false
+      - key: APP_KEY
+        sync: false
+      - key: APP_FALLBACK_LOCALE
+        sync: false
+      - key: APP_FAKER_LOCALE
+        sync: false
+      - key: APP_ENV
+        sync: false
+      - key: APP_DEBUG
+        sync: false
+      region: ohio
+      buildCommand: npm install; npm run build
+      startCommand: node index.js
+      autoDeployTrigger: commit
+    databases:
+    - name: orthoplus-db
+      databaseName: orthoplus
+      user: orthoplus_user
+      plan: free
+      region: ohio
+      ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+      postgresMajorVersion: "18"

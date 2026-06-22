@@ -46,7 +46,7 @@
         <h2 class="font-semibold text-gray-900">New Clinical Record</h2>
 
         <VASSlider v-model="record.vas_score" />
-        <BodyMap v-model="record.body_map" />
+        <BodyMap v-model="record.body_map" :gender="patient?.gender || 'male'" />
         <SOAPNotes v-model="record.soap_notes" />
         <ROMTracker v-model="record.rom" />
         <OrthoTests v-model="record.ortho_tests" />

@@ -37,6 +37,11 @@
           <div>
             <span class="font-medium text-gray-900">{{ p.name }}</span>
             <span class="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">{{ p.op_number }}</span>
+            <span v-if="p.visit_type"
+              :class="p.visit_type === 'new' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
+              class="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full uppercase">
+              {{ p.visit_type === 'new' ? 'New' : 'Revisit' }}
+            </span>
           </div>
           <span class="text-sm text-gray-500">{{ p.phone }}</span>
         </div>
