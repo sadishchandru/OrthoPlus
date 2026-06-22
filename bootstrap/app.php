@@ -14,23 +14,25 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
-        // Trust Railway's reverse proxy so HTTPS/Host are detected (fixes mixed content).
-        $middleware->trustProxies(at: '*', headers:
-            Request::HEADER_X_FORWARDED_FOR |
-            Request::HEADER_X_FORWARDED_HOST |
-            Request::HEADER_X_FORWARDED_PORT |
-            Request::HEADER_X_FORWARDED_PROTO |
-            Request::HEADER_X_FORWARDED_AWS_ELB
-        );
+    ->withMiddleware(function (Middleware $middleware) {
+        // Trust all proxies (required for Render/Railway HTTPS)
+        $middleware->trustProxies(at: '*');
 
-        // Resolve Bearer-token user on every API request (non-blocking)
-        $middleware->api(append: [
-            ResolveUser::class,
+        // Exclude API routes from CSRF
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'sanctum/csrf-cookie',
         ]);
-        // Route-level role gate: ->middleware('role:billing,root')
+
+        // Force HTTPS in production
+        $middleware->web(append: [
+            \Illuminate\Http\Middleware\TrustProxies::class,
+        ]);
+
+        // Add custom middleware aliases
         $middleware->alias([
-            'role' => CheckRole::class,
+            'role'         => CheckRole::class,
+            'resolve.user' => ResolveUser::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
