@@ -8,6 +8,12 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Breakpoints — sm/md/lg/xl keep Tailwind v4 defaults (640/768/1024/1280).
+       xs/2xl/3xl added/aligned per responsive spec. None used in markup pre-change. */
+    --breakpoint-xs: 320px;
+    --breakpoint-2xl: 1440px;
+    --breakpoint-3xl: 1920px;
 }
 
 /* --- Responsive / touch base --- */

@@ -21,13 +21,13 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex border-b border-gray-200">
+    <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-200">
       <button
         v-for="tab in TABS"
         :key="tab.key"
         @click="activeTab = tab.key"
         :class="activeTab === tab.key ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'"
-        class="px-4 py-2.5 border-b-2 text-sm font-medium transition-colors"
+        class="flex-shrink-0 whitespace-nowrap px-4 py-2.5 border-b-2 text-sm font-medium transition-colors"
       >
         {{ tab.label }}
       </button>

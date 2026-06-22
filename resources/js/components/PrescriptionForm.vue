@@ -65,10 +65,10 @@
       </button>
     </div>
     <div v-for="(s, i) in services" :key="'s' + i" class="grid grid-cols-12 gap-2 items-center">
-      <input v-model="s.service_name" class="input col-span-6" placeholder="Service name" />
-      <input v-model.number="s.qty" type="number" min="1" class="input col-span-2" placeholder="Qty" />
-      <input v-model.number="s.unit_price" type="number" step="0.01" class="input col-span-2" placeholder="Price" />
-      <div class="col-span-1 text-sm text-gray-600">₹{{ (s.qty * s.unit_price || 0).toFixed(0) }}</div>
+      <input v-model="s.service_name" class="input col-span-12 sm:col-span-6" placeholder="Service name" />
+      <input v-model.number="s.qty" type="number" min="1" class="input col-span-4 sm:col-span-2" placeholder="Qty" />
+      <input v-model.number="s.unit_price" type="number" step="0.01" class="input col-span-4 sm:col-span-2" placeholder="Price" />
+      <div class="col-span-3 sm:col-span-1 text-sm text-gray-600">₹{{ (s.qty * s.unit_price || 0).toFixed(0) }}</div>
       <button @click="services.splice(i, 1)" type="button" class="col-span-1 text-gray-300 hover:text-red-500">✕</button>
     </div>
 

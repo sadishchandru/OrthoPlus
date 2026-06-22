@@ -8,7 +8,7 @@
     </div>
 
     <!-- Kanban columns -->
-    <div class="grid grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
       <div v-for="col in COLUMNS" :key="col.status" class="bg-gray-50 rounded-lg p-3 min-h-24">
         <h4 class="text-xs font-semibold uppercase tracking-wide mb-3" :class="col.color">{{ col.label }}</h4>
         <div class="space-y-2">
