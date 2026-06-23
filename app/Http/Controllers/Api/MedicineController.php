@@ -11,8 +11,8 @@ class MedicineController extends Controller
     public function index(Request $request)
     {
         $q = Medicine::query()
-            ->when($request->search, fn($qq) => $qq->where('name', 'like', "%{$request->search}%")
-                ->orWhere('generic_name', 'like', "%{$request->search}%"))
+            ->when($request->search, fn($qq) => $qq->where('name', like_operator(), "%{$request->search}%")
+                ->orWhere('generic_name', like_operator(), "%{$request->search}%"))
             ->orderBy('name');
 
         return response()->json($q->paginate(15));
@@ -45,8 +45,8 @@ class MedicineController extends Controller
         // Fallback: LIKE (short query or no FULLTEXT hits)
         $like = '%' . $term . '%';
         $meds = Medicine::where('status', 'active')
-            ->where(fn($qq) => $qq->where('name', 'like', $like)
-                ->orWhere('generic_name', 'like', $like))
+            ->where(fn($qq) => $qq->where('name', like_operator(), $like)
+                ->orWhere('generic_name', like_operator(), $like))
             ->limit(15)
             ->get($cols);
 

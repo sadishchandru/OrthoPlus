@@ -16,8 +16,8 @@ class ExerciseController extends Controller
     public function index(Request $request)
     {
         $exercises = Exercise::query()
-            ->when($request->q, fn($q) => $q->where('name', 'like', "%{$request->q}%")
-                ->orWhere('category', 'like', "%{$request->q}%"))
+            ->when($request->q, fn($q) => $q->where('name', like_operator(), "%{$request->q}%")
+                ->orWhere('category', like_operator(), "%{$request->q}%"))
             ->when($request->category, fn($q) => $q->where('category', $request->category))
             ->when(!$request->boolean('all'), fn($q) => $q->where('is_active', true))
             ->orderBy('name')

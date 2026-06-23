@@ -93,8 +93,8 @@ class PrescriptionController extends Controller
     {
         $q = $request->get('q', '');
         $medicines = Medicine::where('status', 'active')
-            ->where(fn($qq) => $qq->where('name', 'like', "%$q%")
-                ->orWhere('generic_name', 'like', "%$q%"))
+            ->where(fn($qq) => $qq->where('name', like_operator(), "%$q%")
+                ->orWhere('generic_name', like_operator(), "%$q%"))
             ->limit(15)
             ->get(['id', 'name', 'generic_name', 'unit', 'strength', 'quantity', 'sell_price']);
 

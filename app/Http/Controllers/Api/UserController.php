@@ -13,8 +13,8 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $q = User::with('roles')
-            ->when($request->search, fn($qq) => $qq->where('name', 'like', "%{$request->search}%")
-                ->orWhere('username', 'like', "%{$request->search}%"))
+            ->when($request->search, fn($qq) => $qq->where('name', like_operator(), "%{$request->search}%")
+                ->orWhere('username', like_operator(), "%{$request->search}%"))
             ->orderBy('name');
 
         return response()->json($q->paginate(15));

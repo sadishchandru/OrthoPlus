@@ -17,9 +17,9 @@ class PatientController extends Controller
         $patients = Patient::query()
             ->withCount('clinicalRecords')
             ->when($q, fn($query) => $query->where(function ($query) use ($q) {
-                $query->where('name', 'like', "%$q%")
-                      ->orWhere('phone', 'like', "%$q%")
-                      ->orWhere('op_number', 'like', "%$q%");
+                $query->where('name', like_operator(), "%$q%")
+                      ->orWhere('phone', like_operator(), "%$q%")
+                      ->orWhere('op_number', like_operator(), "%$q%");
             }))
             ->orderByDesc('created_at')
             ->paginate(15);
@@ -105,9 +105,9 @@ class PatientController extends Controller
         $hasOpNumber = Schema::hasColumn('patients', 'op_number');
         $opCol = $hasOpNumber ? 'op_number' : 'op_number_prefix';
 
-        $patients = Patient::where('name', 'like', "%$q%")
-            ->orWhere('phone', 'like', "%$q%")
-            ->orWhere($opCol, 'like', "%$q%")
+        $patients = Patient::where('name', like_operator(), "%$q%")
+            ->orWhere('phone', like_operator(), "%$q%")
+            ->orWhere($opCol, like_operator(), "%$q%")
             ->withCount('clinicalRecords')
             ->limit(10)
             ->get(array_filter(['id', 'name', 'phone', $opCol, 'gender', 'dob']))
@@ -123,7 +123,7 @@ class PatientController extends Controller
     private function generateOpNo(): string
     {
         // Parse the numeric suffix in PHP (no SUBSTRING_INDEX) — driver-agnostic.
-        $max = Patient::where('op_number', 'like', 'N-%')
+        $max = Patient::where('op_number', like_operator(), 'N-%')
             ->where('op_number', 'not like', '%-%-%') // exclude revisit OPNos (N-79-1)
             ->pluck('op_number')
             ->map(fn($op) => (int) (explode('-', $op)[1] ?? 0))

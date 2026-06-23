@@ -21,9 +21,9 @@ class PharmacyController extends Controller
         $q = $request->get('q', '');
         $opCol = Schema::hasColumn('patients', 'op_number') ? 'op_number' : 'op_number_prefix';
 
-        $patients = Patient::where('name', 'like', "%$q%")
-            ->orWhere('phone', 'like', "%$q%")
-            ->orWhere($opCol, 'like', "%$q%")
+        $patients = Patient::where('name', like_operator(), "%$q%")
+            ->orWhere('phone', like_operator(), "%$q%")
+            ->orWhere($opCol, like_operator(), "%$q%")
             ->limit(10)
             ->get(array_filter(['id', 'name', 'phone', $opCol]))
             ->map(fn($p) => array_merge($p->toArray(), ['op_number' => $p->$opCol]));

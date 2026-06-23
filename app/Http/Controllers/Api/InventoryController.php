@@ -16,8 +16,8 @@ class InventoryController extends Controller
     {
         $medicines = Medicine::with(['stock'])
             ->where('status', 'active')
-            ->when($request->q, fn($q, $search) => $q->where('name', 'like', "%$search%")
-                ->orWhere('generic_name', 'like', "%$search%"))
+            ->when($request->q, fn($q, $search) => $q->where('name', like_operator(), "%$search%")
+                ->orWhere('generic_name', like_operator(), "%$search%"))
             ->paginate(30);
 
         return response()->json($medicines);

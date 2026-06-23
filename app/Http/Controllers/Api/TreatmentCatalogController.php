@@ -13,7 +13,7 @@ class TreatmentCatalogController extends Controller
     public function index(Request $request)
     {
         $q = TreatmentCatalog::query()
-            ->when($request->search, fn($qq) => $qq->where('name', 'like', "%{$request->search}%"))
+            ->when($request->search, fn($qq) => $qq->where('name', like_operator(), "%{$request->search}%"))
             ->orderBy('name');
 
         return response()->json($q->paginate(15));
