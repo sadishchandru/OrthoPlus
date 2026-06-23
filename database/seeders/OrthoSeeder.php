@@ -49,7 +49,9 @@ class OrthoSeeder extends Seeder
                 [
                     'name'     => $name,
                     'email'    => $username . '@ortho.local',
-                    'password' => Hash::make($pass),
+                    // User model casts password => 'hashed' (hashes on set). Pass plain
+                    // here — Hash::make() too would double-hash → login 401.
+                    'password' => $pass,
                 ]
             );
             $roleId = Role::where('name', $role)->value('id');

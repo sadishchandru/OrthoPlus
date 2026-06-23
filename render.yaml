@@ -7,7 +7,8 @@ projects:
     services:
     - type: web
       name: OrthoPlus
-      runtime: node
+      runtime: docker
+      dockerfilePath: ./Dockerfile
       repo: https://github.com/sadishchandru/OrthoPlus
       plan: free
       envVars:
@@ -74,8 +75,6 @@ projects:
       - key: APP_DEBUG
         sync: false
       region: ohio
-      buildCommand: npm install; npm run build
-      startCommand: node index.js
       autoDeployTrigger: commit
     databases:
     - name: orthoplus-db

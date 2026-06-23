@@ -12,9 +12,9 @@ echo "=== Step 3: Run migrations ==="
 php artisan migrate --force --verbose 2>&1
 echo "Migration exit code: $?"
 
-echo "=== Step 4: Seed database ==="
-php artisan db:seed --class=OrthoSeeder --force 2>&1
-echo "Seed exit code: $?"
+echo "=== Step 4: Seed database — all seeders, non-fatal, idempotent ==="
+# DatabaseSeeder calls Ortho + TreatmentCatalog + Exercise + IndianMedicines.
+php artisan db:seed --force 2>&1 || echo "Seeding skipped/failed — continuing boot"
 
 echo "=== Step 5: Fix Apache port ==="
 sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf

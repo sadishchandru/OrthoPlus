@@ -25,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
         '*',  // temporary: exclude ALL to confirm CSRF is the issue
     ]);
 
+    // Resolve the bearer-token user on every API request so role:root (CheckRole)
+    // and Auth::id() work. Without this, settings endpoints 401 → client logout.
+    $middleware->api(prepend: [ResolveUser::class]);
+
     // Middleware aliases
     $middleware->alias([
         'role'         => CheckRole::class,

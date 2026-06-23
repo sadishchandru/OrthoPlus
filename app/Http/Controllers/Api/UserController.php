@@ -42,7 +42,8 @@ class UserController extends Controller
             'name'        => $data['name'],
             'username'    => $data['username'],
             'email'       => $data['email'] ?? $data['username'] . '@ortho.local',
-            'password'    => Hash::make($data['password']),
+            // password cast => 'hashed' hashes on set; pass plain to avoid double-hash.
+            'password'    => $data['password'],
             'page_access' => $data['page_access'] ?? null,
         ]);
         $user->roles()->sync(Role::whereIn('name', $data['roles'])->pluck('id'));
@@ -70,7 +71,7 @@ class UserController extends Controller
             'page_access' => $data['page_access'] ?? null,
         ]);
         if (!empty($data['password'])) {
-            $user->password = Hash::make($data['password']);
+            $user->password = $data['password']; // 'hashed' cast hashes on set
         }
         $user->save();
         $user->roles()->sync(Role::whereIn('name', $data['roles'])->pluck('id'));
