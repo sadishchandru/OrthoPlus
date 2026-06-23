@@ -6,10 +6,11 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://orthoplus.onrender.com',
-        'http://localhost:5173',
-        'http://localhost:8001',
-    ],
+    'https://ortho.gleaminghms.com',
+    'https://orthoplus.onrender.com',
+    'http://localhost:5173',
+    'http://localhost:8001',
+],
 
     'allowed_origins_patterns' => [],
 
