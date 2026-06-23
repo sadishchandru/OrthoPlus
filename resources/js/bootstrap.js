@@ -24,9 +24,13 @@ window.axios.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401 && !error.config?.url?.includes('/auth/login')) {
             localStorage.removeItem(TOKEN_KEY);
+            localStorage.removeItem('ortho_user');
+            localStorage.removeItem('ortho_module');
+            localStorage.removeItem('module');
             delete window.axios.defaults.headers.common['Authorization'];
-            if (window.location.pathname !== '/login') {
-                window.location.href = '/login';
+            const loginPath = window.location.pathname.startsWith('/hospital') ? '/hospital/login' : '/clinic/login';
+            if (window.location.pathname !== loginPath) {
+                window.location.href = loginPath;
             }
         }
         return Promise.reject(error);

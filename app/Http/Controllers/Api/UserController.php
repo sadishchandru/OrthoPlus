@@ -32,6 +32,7 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username',
             'email'    => 'nullable|email|unique:users,email',
             'password' => 'required|string|min:4',
+            'module'   => 'nullable|in:clinic,hospital,both',
             'roles'    => 'required|array|min:1',
             'roles.*'  => 'string|exists:roles,name',
             'page_access'   => 'nullable|array',
@@ -45,6 +46,7 @@ class UserController extends Controller
             // password cast => 'hashed' hashes on set; pass plain to avoid double-hash.
             'password'    => $data['password'],
             'page_access' => $data['page_access'] ?? null,
+            'module'      => $data['module'] ?? 'clinic',
         ]);
         $user->roles()->sync(Role::whereIn('name', $data['roles'])->pluck('id'));
 
@@ -58,6 +60,7 @@ class UserController extends Controller
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'email'    => 'nullable|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:4',
+            'module'   => 'nullable|in:clinic,hospital,both',
             'roles'    => 'required|array|min:1',
             'roles.*'  => 'string|exists:roles,name',
             'page_access'   => 'nullable|array',
@@ -69,6 +72,7 @@ class UserController extends Controller
             'username'    => $data['username'],
             'email'       => $data['email'] ?? $user->email,
             'page_access' => $data['page_access'] ?? null,
+            'module'      => $data['module'] ?? $user->module ?? 'clinic',
         ]);
         if (!empty($data['password'])) {
             $user->password = $data['password']; // 'hashed' cast hashes on set

@@ -57,4 +57,21 @@ return [
     'notes'            => 'नोट्स',
     'outcome_measures' => 'परिणाम मापक',
     'score'            => 'स्कोर',
+
+    // ---- Hospital (in-patient) — TODO Hindi translation; English fallback ----
+    'admission_card' => 'भर्ती कार्ड', 'in_patient' => 'इन-पेशेंट', 'ip_number' => 'IP नंबर',
+    'ward' => 'वार्ड', 'bed' => 'बेड', 'admission_date' => 'भर्ती तिथि',
+    'admitting_doctor' => 'भर्ती करने वाले डॉक्टर', 'diagnosis' => 'निदान', 'deposit' => 'जमा',
+    'ip_bill' => 'इन-पेशेंट बिल', 'bill_no' => 'बिल नंबर', 'bill_date' => 'बिल तिथि',
+    'room_charges' => 'कमरा शुल्क', 'pharmacy_charges' => 'फार्मेसी शुल्क', 'surgery_charges' => 'सर्जरी शुल्क',
+    'implant_charges' => 'इम्प्लांट शुल्क', 'misc_charges' => 'विविध शुल्क', 'paid' => 'भुगतान', 'balance' => 'शेष',
+    'discharge_summary' => 'डिस्चार्ज सारांश', 'final_diagnosis' => 'अंतिम निदान',
+    'procedures' => 'की गई प्रक्रियाएं', 'condition' => 'डिस्चार्ज पर स्थिति', 'follow_up' => 'फॉलो-अप तिथि',
+    'discharge_meds' => 'डिस्चार्ज दवाएं', 'surgery_note' => 'ऑपरेटिव नोट', 'procedure' => 'प्रक्रिया',
+    'surgeon' => 'सर्जन', 'anesthetist' => 'एनेस्थेटिस्ट', 'or_room' => 'OR कक्ष', 'scheduled' => 'निर्धारित',
+    'complications' => 'जटिलताएं', 'post_op' => 'पोस्ट-ऑप नोट्स', 'opd_token' => 'OPD टोकन',
+    'token' => 'टोकन', 'priority' => 'प्राथमिकता', 'pre_op_plan' => 'प्री-ऑपरेटिव योजना',
+    'template' => 'टेम्पलेट', 'plan_details' => 'योजना विवरण', 'simulation' => 'सिमुलेशन नोट्स',
+    'implant_label' => 'इम्प्लांट लेबल', 'manufacturer' => 'निर्माता', 'ref_no' => 'Ref नंबर',
+    'size' => 'आकार', 'batch' => 'बैच', 'expiry' => 'समाप्ति',
 ];

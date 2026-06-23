@@ -4,6 +4,44 @@ Orthopedic & physiotherapy clinic management system. Single-page Vue app on a La
 
 ---
 
+## Latest Update - Portal Split (2026-06-23)
+
+Separate login portals were added for Clinic Management and Orthopedic HMS.
+
+### Database/Auth
+- New migration: `database/migrations/2026_06_23_220001_add_module_to_users_table.php`.
+- `users.module` enum values: `clinic`, `hospital`, `both`; default is `clinic`.
+- `POST /api/auth/login` now accepts `module` (`clinic` or `hospital`) and returns 403 when the user is not authorized for that portal.
+- Auth payload now includes `user.module`; frontend stores it in `ortho_module` and `module`.
+- Existing clinic demo users stay `clinic`; existing `root/root123` is seeded as `both`.
+- Hospital demo users seeded by `OrthoSeeder`:
+  - `hadmin/hadmin123` (`root`, `hospital`)
+  - `surgeon/surg123` (`doctor`, `hospital`)
+  - `nurse/nurse123` (`therapist`, `hospital`)
+  - `reception/recep123` (`front_office`, `hospital`)
+  - `hbilling/hbill123` (`billing`, `hospital`)
+  - `hpharma/hph123` (`pharmacy`, `hospital`)
+
+### Frontend Routes
+- `/` is now `PortalSelect.vue` with Clinic and Hospital cards.
+- `/login` redirects to `/clinic/login`.
+- `/clinic/login` uses `LoginPage.vue` and sends `module=clinic`.
+- `/hospital/login` uses `HospitalLoginPage.vue` and sends `module=hospital`.
+- Clinic dashboard route is `/dashboard` (not `/`).
+- Hospital routes are nested under `/hospital` and render through `resources/js/layouts/HospitalLayout.vue`.
+- Main hospital paths: `/hospital/dashboard`, `/hospital/admissions`, `/hospital/beds`, `/hospital/opd`, `/hospital/surgery`, `/hospital/staff`, `/hospital/pharmacy`, `/hospital/billing`, `/hospital/reports`, `/hospital/settings`.
+- Old top-level HMS paths (`/admissions`, `/beds`, `/opd`, `/surgeries`, `/staff`, `/ip-billing`, `/hospital-reports`, etc.) redirect to the new `/hospital/...` paths.
+- OPD queue now supports inline patient registration: `resources/js/pages/OpdQueue.vue` has `+ New Patient`, opens `PatientForm`, and returns the newly created patient into the token flow.
+
+### Verification Done
+- `npm.cmd run build` passed. Use `npm.cmd` on Windows PowerShell because `npm.ps1` may be blocked by execution policy.
+- Ran `docker exec laravel_app php artisan migrate --force`.
+- Ran `docker exec laravel_app php artisan db:seed --class=OrthoSeeder --force`.
+- Confirmed database modules for sample users: `root=both`, `doctor=clinic`, `hadmin/surgeon/nurse=hospital`.
+- Added `require_once app/helpers.php` in `bootstrap/app.php` because Composer's generated autoload files in this environment did not yet include the custom helper file; this fixes runtime calls to `like_operator()` immediately.
+
+---
+
 ## 1. Stack & Runtime
 
 | Layer | Tech |

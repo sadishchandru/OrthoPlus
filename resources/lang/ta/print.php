@@ -57,4 +57,21 @@ return [
     'notes'            => 'குறிப்புகள்',
     'outcome_measures' => 'விளைவு அளவீடுகள்',
     'score'            => 'மதிப்பெண்',
+
+    // ---- Hospital (in-patient) — TODO Tamil translation; English fallback ----
+    'admission_card' => 'அனுமதி அட்டை', 'in_patient' => 'உள்நோயாளி', 'ip_number' => 'IP எண்',
+    'ward' => 'வார்டு', 'bed' => 'படுக்கை', 'admission_date' => 'அனுமதி தேதி',
+    'admitting_doctor' => 'Admitting Doctor', 'diagnosis' => 'நோய் கண்டறிதல்', 'deposit' => 'வைப்புத்தொகை',
+    'ip_bill' => 'உள்நோயாளி பில்', 'bill_no' => 'பில் எண்', 'bill_date' => 'பில் தேதி',
+    'room_charges' => 'அறை கட்டணம்', 'pharmacy_charges' => 'மருந்தக கட்டணம்', 'surgery_charges' => 'அறுவை கட்டணம்',
+    'implant_charges' => 'Implant Charges', 'misc_charges' => 'இதர கட்டணம்', 'paid' => 'செலுத்தியது', 'balance' => 'மீதி',
+    'discharge_summary' => 'வெளியேற்ற சுருக்கம்', 'final_diagnosis' => 'இறுதி நோய் கண்டறிதல்',
+    'procedures' => 'Procedures Done', 'condition' => 'வெளியேற்ற நிலை', 'follow_up' => 'பின்தொடர் தேதி',
+    'discharge_meds' => 'வெளியேற்ற மருந்துகள்', 'surgery_note' => 'அறுவை குறிப்பு', 'procedure' => 'செயல்முறை',
+    'surgeon' => 'அறுவை மருத்துவர்', 'anesthetist' => 'Anesthetist', 'or_room' => 'OR அறை', 'scheduled' => 'Scheduled',
+    'complications' => 'சிக்கல்கள்', 'post_op' => 'Post-op Notes', 'opd_token' => 'OPD டோக்கன்',
+    'token' => 'டோக்கன்', 'priority' => 'முன்னுரிமை', 'pre_op_plan' => 'Pre-Operative Plan',
+    'template' => 'Template', 'plan_details' => 'Plan Details', 'simulation' => 'Simulation Notes',
+    'implant_label' => 'Implant Label', 'manufacturer' => 'உற்பத்தியாளர்', 'ref_no' => 'Ref No',
+    'size' => 'அளவு', 'batch' => 'Batch', 'expiry' => 'காலாவதி',
 ];

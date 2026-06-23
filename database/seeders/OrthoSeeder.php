@@ -34,16 +34,16 @@ class OrthoSeeder extends Seeder
             Role::firstOrCreate(['name' => $name], ['label' => $label, 'guard_name' => 'web']);
         }
 
-        // username => [display name, password, role]
+        // username => [display name, password, role, module]
         $users = [
-            'root'        => ['Root Admin',   'root123', 'root'],
-            'doctor'      => ['Dr. Default',  'doc123',  'doctor'],
-            'frontoffice' => ['Front Office', 'fo123',   'front_office'],
-            'billing'     => ['Billing Desk', 'bill123', 'billing'],
-            'pharmacy'    => ['Pharmacy',     'ph123',   'pharmacy'],
-            'therapist'   => ['Therapist',    'th123',   'therapist'],
+            'root'        => ['Root Admin',   'root123', 'root',         'both'],
+            'doctor'      => ['Dr. Default',  'doc123',  'doctor',       'clinic'],
+            'frontoffice' => ['Front Office', 'fo123',   'front_office', 'clinic'],
+            'billing'     => ['Billing Desk', 'bill123', 'billing',      'clinic'],
+            'pharmacy'    => ['Pharmacy',     'ph123',   'pharmacy',     'clinic'],
+            'therapist'   => ['Therapist',    'th123',   'therapist',    'clinic'],
         ];
-        foreach ($users as $username => [$name, $pass, $role]) {
+        foreach ($users as $username => [$name, $pass, $role, $module]) {
             $user = User::updateOrCreate(
                 ['username' => $username],
                 [
@@ -52,6 +52,31 @@ class OrthoSeeder extends Seeder
                     // User model casts password => 'hashed' (hashes on set). Pass plain
                     // here — Hash::make() too would double-hash → login 401.
                     'password' => $pass,
+                    'module'   => $module,
+                ]
+            );
+            $roleId = Role::where('name', $role)->value('id');
+            $user->roles()->syncWithoutDetaching([$roleId]);
+        }
+
+        $hospitalUsers = [
+            'hadmin'    => ['Hospital Admin',   'hadmin@ortho.local',    'hadmin123', 'root',         ['*']],
+            'surgeon'   => ['Surgeon',          'surgeon@ortho.local',   'surg123',   'doctor',       ['dashboard', 'opd', 'inpatients', 'beds', 'surgery', 'imaging', 'hospital-reports']],
+            'nurse'     => ['Ward Nurse',       'nurse@ortho.local',     'nurse123',  'therapist',    ['dashboard', 'opd', 'inpatients', 'beds']],
+            'reception' => ['Receptionist',     'reception@ortho.local', 'recep123',  'front_office', ['dashboard', 'patients', 'appointments', 'opd', 'inpatients']],
+            'hbilling'  => ['Hospital Billing', 'hbilling@ortho.local',  'hbill123',  'billing',      ['dashboard', 'patients', 'ip-billing', 'hospital-reports']],
+            'hpharma'   => ['Hospital Pharma',  'hpharma@ortho.local',   'hph123',    'pharmacy',     ['pharmacy', 'inventory']],
+        ];
+
+        foreach ($hospitalUsers as $username => [$name, $email, $pass, $role, $pageAccess]) {
+            $user = User::updateOrCreate(
+                ['username' => $username],
+                [
+                    'name'        => $name,
+                    'email'       => $email,
+                    'password'    => $pass,
+                    'module'      => 'hospital',
+                    'page_access' => $pageAccess,
                 ]
             );
             $roleId = Role::where('name', $role)->value('id');

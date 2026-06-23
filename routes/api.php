@@ -17,6 +17,23 @@ use App\Http\Controllers\Api\MedicineController;
 use App\Http\Controllers\Api\SoapTemplateController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\PharmacyController;
+// ---- Hospital upgrade controllers ----------------------------------------
+use App\Http\Controllers\Api\WardController;
+use App\Http\Controllers\Api\BedController;
+use App\Http\Controllers\Api\AdmissionController;
+use App\Http\Controllers\Api\OpdController;
+use App\Http\Controllers\Api\OpdVisitController;
+use App\Http\Controllers\Api\SurgeryController;
+use App\Http\Controllers\Api\ImplantController;
+use App\Http\Controllers\Api\PreOpPlanController;
+use App\Http\Controllers\Api\PreferenceCardController;
+use App\Http\Controllers\Api\StaffController;
+use App\Http\Controllers\Api\LeaveRequestController;
+use App\Http\Controllers\Api\ImagingController;
+use App\Http\Controllers\Api\ChargeMasterController;
+use App\Http\Controllers\Api\IpBillingController;
+use App\Http\Controllers\Api\GlobalPeriodController;
+use App\Http\Controllers\Api\OpOrderController;
 
 // ---- Auth ----------------------------------------------------------------
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -106,4 +123,72 @@ Route::prefix('settings')->middleware('role:root')->group(function () {
 
     Route::get('users/roles', [UserController::class, 'roles']);
     Route::apiResource('users', UserController::class)->except(['show']);
+});
+
+// ==========================================================================
+//  HOSPITAL UPGRADE — In-Patient HMS modules (open like the rest of the app;
+//  pages are router-guarded on the frontend via page_access keys).
+// ==========================================================================
+
+// ---- In-Patients & Beds --------------------------------------------------
+Route::get('beds/available', [BedController::class, 'available']);          // before {bed}
+Route::apiResource('beds', BedController::class);
+Route::get('wards/{ward}/beds', [WardController::class, 'beds']);
+Route::apiResource('wards', WardController::class);
+
+Route::post('admissions/{admission}/transfer-bed', [AdmissionController::class, 'transferBed']);
+Route::post('admissions/{admission}/discharge', [AdmissionController::class, 'discharge']);
+Route::apiResource('admissions', AdmissionController::class);
+
+// ---- OPD Queue -----------------------------------------------------------
+Route::get('opd/queue/today', [OpdController::class, 'todayQueue']);
+Route::post('opd/queue', [OpdController::class, 'addToQueue']);
+Route::put('opd/queue/{opd_queue}/status', [OpdController::class, 'updateStatus']);
+Route::apiResource('opd-visits', OpdVisitController::class);
+
+// ---- Surgery & OR --------------------------------------------------------
+Route::get('surgeries/schedule', [SurgeryController::class, 'schedule']);   // before {surgery}
+Route::apiResource('surgeries', SurgeryController::class);
+Route::get('implants/low-stock', [ImplantController::class, 'lowStock']);   // before {implant}
+Route::post('implants/{implant}/adjust', [ImplantController::class, 'adjust']);
+Route::apiResource('implants', ImplantController::class);
+Route::apiResource('pre-op-plans', PreOpPlanController::class);
+Route::apiResource('preference-cards', PreferenceCardController::class);
+
+// ---- Staff ---------------------------------------------------------------
+Route::get('staff/on-duty', [StaffController::class, 'onDuty']);            // before {staff}
+Route::post('staff/{staff}/shift', [StaffController::class, 'assignShift']);
+Route::apiResource('staff', StaffController::class);
+Route::put('leave-requests/{leave_request}/approve', [LeaveRequestController::class, 'approve']);
+Route::apiResource('leave-requests', LeaveRequestController::class);
+
+// ---- Imaging -------------------------------------------------------------
+Route::post('imaging-orders/{imaging_order}/upload', [ImagingController::class, 'uploadImages']);
+Route::apiResource('imaging-orders', ImagingController::class);
+Route::get('patients/{patient}/imaging', [ImagingController::class, 'patientImages']);
+
+// ---- Billing -------------------------------------------------------------
+Route::get('charge-master', [ChargeMasterController::class, 'index']);
+Route::post('charge-master', [ChargeMasterController::class, 'store']);
+Route::delete('charge-master/{charge_master}', [ChargeMasterController::class, 'destroy']);
+Route::post('ip-bills', [IpBillingController::class, 'generate']);
+Route::post('ip-bills/{ip_bill}/finalize', [IpBillingController::class, 'finalize']);
+Route::get('ip-bills/{admission_id}', [IpBillingController::class, 'show']);
+Route::get('global-periods/{patient}', [GlobalPeriodController::class, 'index']);
+Route::post('global-periods', [GlobalPeriodController::class, 'store']);
+
+// ---- O&P (Orthotic & Prosthetic) -----------------------------------------
+Route::post('op-orders/{op_order}/fitting', [OpOrderController::class, 'addFitting']);
+Route::apiResource('op-orders', OpOrderController::class);
+
+// ---- Hospital reports ----------------------------------------------------
+Route::prefix('reports')->group(function () {
+    Route::get('/ip-census', [ReportController::class, 'ipCensus']);
+    Route::get('/bed-occupancy', [ReportController::class, 'bedOccupancy']);
+    Route::get('/surgery-list', [ReportController::class, 'surgeryList']);
+    Route::get('/revenue-ip', [ReportController::class, 'revenueIp']);
+    Route::get('/implant-usage', [ReportController::class, 'implantUsage']);
+    Route::get('/staff-attendance', [ReportController::class, 'staffAttendance']);
+    Route::get('/discharge-summary', [ReportController::class, 'dischargeSummary']);
+    Route::get('/global-periods', [ReportController::class, 'globalPeriods']);
 });

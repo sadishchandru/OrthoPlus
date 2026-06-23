@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             TreatmentCatalogSeeder::class,
             ExerciseSeeder::class,
             IndianMedicinesSeeder::class,
+            ClinicalTemplateSeeder::class,
         ]);
     }
 }

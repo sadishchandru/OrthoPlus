@@ -15,6 +15,7 @@ class AuthController extends Controller
         $data = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
+            'module'   => 'nullable|in:clinic,hospital',
         ]);
 
         // Accept either username or email in the username field
@@ -24,6 +25,15 @@ class AuthController extends Controller
 
         if (!$user || !Hash::check($data['password'], $user->password)) {
             return response()->json(['message' => 'Invalid credentials'], 401);
+        }
+
+        $requestedModule = $data['module'] ?? 'clinic';
+        $userModule = $user->module ?: 'clinic';
+
+        if ($userModule !== 'both' && $userModule !== $requestedModule) {
+            return response()->json([
+                'message' => 'Access denied. Your account is not authorized for this portal.',
+            ], 403);
         }
 
         $token = Str::random(64);
@@ -61,6 +71,7 @@ class AuthController extends Controller
             'email'    => $user->email,
             'roles'    => $user->roles->pluck('name')->values(),
             'role'     => $user->roles->pluck('name')->first(), // primary role for badge
+            'module'   => $user->module ?: 'clinic',
             'page_access' => $user->pageAccess(),               // drives nav + route guard
         ];
     }

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Middleware\ResolveUser;
 use App\Http\Middleware\CheckRole;
 
+require_once __DIR__.'/../app/helpers.php';
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',

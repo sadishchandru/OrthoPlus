@@ -12,6 +12,7 @@
             :class="form.id === u.id ? 'border-blue-400 bg-blue-50' : 'border-gray-200'">
           <div>
             <div class="font-medium text-sm">{{ u.name }} <span class="text-gray-400 text-xs">@{{ u.username }}</span></div>
+            <div class="text-[11px] uppercase tracking-wide text-gray-400 mt-0.5">{{ u.module || 'clinic' }}</div>
             <div class="flex flex-wrap gap-1 mt-0.5">
               <span v-for="r in u.roles" :key="r.id" class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">{{ r.name }}</span>
             </div>
@@ -32,6 +33,11 @@
         <input v-model="form.username" class="input" placeholder="Username *" />
         <input v-model="form.email" class="input" placeholder="Email (optional)" />
         <input v-model="form.password" type="password" class="input" :placeholder="form.id ? 'New password (blank=keep)' : 'Password *'" />
+        <select v-model="form.module" class="input">
+          <option value="clinic">Clinic</option>
+          <option value="hospital">Hospital</option>
+          <option value="both">Both</option>
+        </select>
       </div>
 
       <div>
@@ -88,6 +94,15 @@ const PAGES = [
   { key: 'patients',      label: 'Patients' },
   { key: 'appointments',  label: 'Appointments' },
   { key: 'direct-doctor', label: 'Direct Doctor' },
+  { key: 'opd',           label: 'OPD' },
+  { key: 'inpatients',    label: 'In-Patients' },
+  { key: 'beds',          label: 'Beds' },
+  { key: 'surgery',       label: 'Surgery' },
+  { key: 'imaging',       label: 'Imaging' },
+  { key: 'staff',         label: 'Staff' },
+  { key: 'ip-billing',    label: 'IP Billing' },
+  { key: 'op-devices',    label: 'O&P' },
+  { key: 'hospital-reports', label: 'Reports' },
   { key: 'inventory',     label: 'Inventory' },
   { key: 'pharmacy',      label: 'Pharmacy' },
   { key: 'invoices',      label: 'Invoices' },
@@ -95,7 +110,7 @@ const PAGES = [
   { key: 'settings',      label: 'Settings' },
 ];
 
-function blank() { return { id: null, name: '', username: '', email: '', password: '', roles: [], page_access: [] }; }
+function blank() { return { id: null, name: '', username: '', email: '', password: '', module: 'clinic', roles: [], page_access: [] }; }
 
 // Union of selected roles' page_access ('*' => all pages).
 function unionFor(roleNames) {
@@ -126,6 +141,7 @@ function edit(u) {
   const roleNames = (u.roles || []).map((r) => r.name);
   form.value = {
     id: u.id, name: u.name, username: u.username, email: u.email || '', password: '',
+    module: u.module || 'clinic',
     roles: roleNames,
     page_access: (u.page_access && u.page_access.length) ? [...u.page_access] : unionFor(roleNames),
   };
