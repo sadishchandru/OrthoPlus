@@ -1,22 +1,24 @@
 #!/bin/bash
 set -e
 
-echo "=== Clearing config ==="
+echo "=== Step 1: Config clear ==="
 php artisan config:clear
 php artisan config:cache
-php artisan view:clear
 
-echo "=== Running migrations ==="
-php artisan migrate --force 2>&1
-echo "=== Migration done ==="
+echo "=== Step 2: Test DB connection ==="
+php artisan tinker --execute="DB::connection()->getPdo(); echo 'DB OK';" 2>&1
 
-echo "=== Seeding database ==="
-php artisan db:seed --force 2>&1
-echo "=== Seeding done ==="
+echo "=== Step 3: Run migrations ==="
+php artisan migrate --force --verbose 2>&1
+echo "Migration exit code: $?"
 
-# Change Apache port to 8080
+echo "=== Step 4: Seed database ==="
+php artisan db:seed --class=OrthoSeeder --force 2>&1
+echo "Seed exit code: $?"
+
+echo "=== Step 5: Fix Apache port ==="
 sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
 sed -i 's/:80>/:8080>/' /etc/apache2/sites-available/000-default.conf
 
-echo "=== Starting Apache ==="
+echo "=== Step 6: Start Apache ==="
 apache2-foreground
