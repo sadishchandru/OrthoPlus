@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             ExerciseSeeder::class,
             IndianMedicinesSeeder::class,
             ClinicalTemplateSeeder::class,
+            HospitalSeeder::class,
         ]);
     }
 }

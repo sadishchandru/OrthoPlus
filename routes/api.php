@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\MedicineController;
 use App\Http\Controllers\Api\SoapTemplateController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\PharmacyController;
+use App\Http\Controllers\Api\PatientFileController;
 // ---- Hospital upgrade controllers ----------------------------------------
 use App\Http\Controllers\Api\WardController;
 use App\Http\Controllers\Api\BedController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Api\ChargeMasterController;
 use App\Http\Controllers\Api\IpBillingController;
 use App\Http\Controllers\Api\GlobalPeriodController;
 use App\Http\Controllers\Api\OpOrderController;
+use App\Http\Controllers\Hospital\HospitalReportController;
 
 // ---- Auth ----------------------------------------------------------------
 Route::post('/auth/login', [AuthController::class, 'login']);
@@ -46,8 +48,13 @@ Route::prefix('patients')->group(function () {
     Route::post('/', [PatientController::class, 'store']);
     Route::get('/search', [PatientController::class, 'search']);
     Route::get('/{patient}', [PatientController::class, 'show']);
+    Route::put('/{patient}', [PatientController::class, 'update']);
     Route::get('/{patient}/visits', [PatientController::class, 'visits']);
+    // Patient files (real uploads: image/pdf/doc)
+    Route::get('/{patient}/files', [PatientFileController::class, 'index']);
+    Route::post('/{patient}/files', [PatientFileController::class, 'store']);
 });
+Route::delete('/patient-files/{file}', [PatientFileController::class, 'destroy']);
 
 Route::prefix('appointments')->group(function () {
     Route::get('/calendar', [AppointmentController::class, 'calendar']);
@@ -191,4 +198,54 @@ Route::prefix('reports')->group(function () {
     Route::get('/staff-attendance', [ReportController::class, 'staffAttendance']);
     Route::get('/discharge-summary', [ReportController::class, 'dischargeSummary']);
     Route::get('/global-periods', [ReportController::class, 'globalPeriods']);
+});
+
+// ==========================================================================
+//  /api/hospital/* — namespaced alias group for the Hospital (HMS) portal.
+//  Maps to the existing Api\ controllers (no duplicate logic) + a dedicated
+//  hospital dashboard report. Coexists with the flat routes above.
+// ==========================================================================
+Route::prefix('hospital')->group(function () {
+    // Wards & Beds
+    Route::get('wards', [WardController::class, 'index']);
+    Route::post('wards', [WardController::class, 'store']);
+    Route::put('wards/{ward}', [WardController::class, 'update']);
+    Route::get('wards/{ward}/beds', [WardController::class, 'beds']);
+    Route::get('beds/available', [BedController::class, 'available']);   // before {bed}
+    Route::get('beds', [BedController::class, 'index']);
+    Route::post('beds', [BedController::class, 'store']);
+    Route::put('beds/{bed}', [BedController::class, 'update']);
+    Route::patch('beds/{bed}/status', [BedController::class, 'updateStatus']);
+
+    // Admissions
+    Route::get('admissions', [AdmissionController::class, 'index']);
+    Route::post('admissions', [AdmissionController::class, 'store']);
+    Route::get('admissions/{admission}', [AdmissionController::class, 'show']);
+    Route::post('admissions/{admission}/transfer-bed', [AdmissionController::class, 'transferBed']);
+    Route::post('admissions/{admission}/discharge', [AdmissionController::class, 'discharge']);
+
+    // OPD Queue
+    Route::get('opd/queue', [OpdController::class, 'todayQueue']);
+    Route::post('opd/queue', [OpdController::class, 'addToQueue']);
+    Route::patch('opd/queue/{opd_queue}/status', [OpdController::class, 'updateStatus']);
+    Route::post('opd/queue/{opd_queue}/consult', [OpdController::class, 'saveConsultation']);
+
+    // Staff
+    Route::get('staff/on-duty', [StaffController::class, 'onDuty']);     // before {staff}
+    Route::get('staff', [StaffController::class, 'index']);
+    Route::post('staff', [StaffController::class, 'store']);
+    Route::put('staff/{staff}', [StaffController::class, 'update']);
+
+    // Billing
+    Route::get('charge-master', [ChargeMasterController::class, 'index']);
+    Route::post('charge-master', [ChargeMasterController::class, 'store']);
+    Route::put('charge-master/{charge_master}', [ChargeMasterController::class, 'update']);
+    Route::post('ip-bills', [IpBillingController::class, 'generate']);
+    Route::post('ip-bills/{ip_bill}/finalize', [IpBillingController::class, 'finalize']);
+    Route::get('ip-bills/{admission_id}', [IpBillingController::class, 'show']);
+
+    // Reports
+    Route::get('reports/dashboard', [HospitalReportController::class, 'dashboard']);
+    Route::get('reports/bed-occupancy', [HospitalReportController::class, 'bedOccupancy']);
+    Route::get('reports/census', [HospitalReportController::class, 'census']);
 });

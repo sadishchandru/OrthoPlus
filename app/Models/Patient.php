@@ -15,6 +15,7 @@ class Patient extends Model
         'op_number_counter',
         'name',
         'phone',
+        'country_code',
         'email',
         'dob',
         'gender',

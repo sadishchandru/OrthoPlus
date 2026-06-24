@@ -11,7 +11,7 @@ class BedController extends Controller
     public function index(Request $request)
     {
         $beds = Bed::query()
-            ->with('ward:id,name,type')
+            ->with(['ward:id,name,type', 'currentAdmission.patient:id,name,op_number'])
             ->when($request->filled('ward_id'), fn($q) => $q->where('ward_id', $request->ward_id))
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->status))
             ->orderBy('ward_id')->orderBy('bed_number')
@@ -60,6 +60,16 @@ class BedController extends Controller
     {
         $bed->delete();
         return response()->json(['deleted' => true]);
+    }
+
+    /** Patch only the bed status (available/occupied/maintenance/reserved). */
+    public function updateStatus(Request $request, Bed $bed)
+    {
+        $data = $request->validate([
+            'status' => 'required|in:available,occupied,maintenance,reserved',
+        ]);
+        $bed->update($data);
+        return response()->json($bed);
     }
 
     /** All currently-available, active beds (for admission/transfer pickers). */

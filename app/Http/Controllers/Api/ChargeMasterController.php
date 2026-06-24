@@ -39,6 +39,19 @@ class ChargeMasterController extends Controller
         return response()->json($charge, $charge->wasRecentlyCreated ? 201 : 200);
     }
 
+    public function update(Request $request, ChargeMaster $charge_master)
+    {
+        $data = $request->validate([
+            'name'          => 'sometimes|required|string|max:255',
+            'category'      => 'sometimes|required|in:consultation,procedure,room,lab,pharmacy,surgery,implant,misc',
+            'charge_amount' => 'sometimes|required|numeric|min:0',
+            'gst_pct'       => 'nullable|numeric|min:0|max:100',
+            'is_active'     => 'boolean',
+        ]);
+        $charge_master->update($data);
+        return response()->json($charge_master);
+    }
+
     public function destroy(ChargeMaster $charge_master)
     {
         $charge_master->delete();

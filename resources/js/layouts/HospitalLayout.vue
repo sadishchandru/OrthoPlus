@@ -114,8 +114,8 @@ const groups = [
   {
     label: 'Out-Patients',
     items: [
-      { label: 'Queue Board', to: '/hospital/opd', page: 'opd', mark: 'OP' },
-      { label: 'OPD Visits', to: '/hospital/opd-visits', page: 'opd', mark: 'OV' },
+      { label: 'OPD Registration', to: '/hospital/opd-registration', page: 'opd', mark: 'OR' },
+      { label: 'OPD Consulting', to: '/hospital/opd-consulting', page: 'opd', mark: 'OC' },
     ],
   },
   {

@@ -18,4 +18,10 @@ class Bed extends Model
     ];
 
     public function ward() { return $this->belongsTo(Ward::class); }
+
+    /** The active admission occupying this bed (status = admitted), if any. */
+    public function currentAdmission()
+    {
+        return $this->hasOne(Admission::class)->where('status', 'admitted')->latestOfMany();
+    }
 }

@@ -11,6 +11,7 @@ class OpdQueue extends Model
     protected $fillable = [
         'patient_id', 'token_number', 'date', 'doctor_id',
         'status', 'priority', 'arrival_time', 'seen_time',
+        'chief_complaint', 'vitals',
     ];
 
     protected $casts = [
@@ -18,6 +19,7 @@ class OpdQueue extends Model
         'arrival_time' => 'datetime',
         'seen_time'    => 'datetime',
         'token_number' => 'integer',
+        'vitals'       => 'array',
     ];
 
     public function patient() { return $this->belongsTo(Patient::class); }

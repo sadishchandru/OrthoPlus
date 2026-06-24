@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Prescription extends Model
 {
     protected $fillable = [
-        'patient_id', 'clinical_record_id', 'items', 'medications', 'services',
+        'patient_id', 'clinical_record_id', 'visit_id', 'items', 'medications', 'services',
         'estimated_total', 'notes', 'prescription_date', 'doctor_id', 'type',
         'status', 'is_active', 'created_by',
     ];

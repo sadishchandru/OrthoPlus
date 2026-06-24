@@ -22,6 +22,7 @@ export default defineConfig({
             output: {
                 manualChunks: {
                     vendor: ['vue', 'vue-router', 'pinia', 'axios'],
+                    three: ['three'],
                     calendar: [
                         '@fullcalendar/vue3', '@fullcalendar/core', '@fullcalendar/daygrid',
                         '@fullcalendar/timegrid', '@fullcalendar/list', '@fullcalendar/interaction',

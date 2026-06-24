@@ -1,5 +1,7 @@
 <template>
   <div class="body-map-wrapper w-full flex flex-col items-center gap-3">
+    <!-- Reactive overlay: tints each SELECTED part shape by severity (CSS fill beats the gradient). -->
+    <component :is="'style'" v-html="highlightCss"></component>
     <div class="w-full flex items-center justify-between gap-3 flex-wrap">
       <label class="text-sm font-medium text-gray-700">Body Map — tap to mark pain points</label>
       <div class="flex gap-2">
@@ -26,8 +28,16 @@
         style="display:block; max-height:74vh; touch-action:none; pointer-events:all;"
         @click.stop @mousedown.stop @touchstart.stop
       >
-        <!-- ===== SILHOUETTE (one fill, no stroke → merges) ===== -->
-        <g :fill="C" stroke="none">
+        <!-- 3D-style shading: radial gradient gives the silhouette rounded depth. -->
+        <defs>
+          <radialGradient id="bodyShade" cx="42%" cy="28%" r="85%">
+            <stop offset="0%" stop-color="#8ECBCD"/>
+            <stop offset="55%" stop-color="#5B9EA0"/>
+            <stop offset="100%" stop-color="#33696B"/>
+          </radialGradient>
+        </defs>
+        <!-- ===== SILHOUETTE (gradient fill; selected parts re-tinted via highlightCss) ===== -->
+        <g fill="url(#bodyShade)" stroke="none">
           <!-- HEAD / NECK -->
           <ellipse cx="100" cy="44" rx="26" ry="30" class="body-part" data-part="head" @click.stop="mark('head','Head')" @touchend.stop.prevent="mark('head','Head')"/>
           <rect x="86" y="72" width="28" height="22" rx="9" class="body-part" data-part="neck" @click.stop="mark('neck','Neck')" @touchend.stop.prevent="mark('neck','Neck')"/>
@@ -36,9 +46,15 @@
           <ellipse cx="66" cy="102" :rx="shoulderRx" ry="15" class="body-part" data-part="left_shoulder" @click.stop="mark('left_shoulder','Left Shoulder')" @touchend.stop.prevent="mark('left_shoulder','Left Shoulder')"/>
           <ellipse cx="134" cy="102" :rx="shoulderRx" ry="15" class="body-part" data-part="right_shoulder" @click.stop="mark('right_shoulder','Right Shoulder')" @touchend.stop.prevent="mark('right_shoulder','Right Shoulder')"/>
 
-          <!-- TORSO / ABDOMEN (gender shape) -->
-          <path :d="torsoPath" class="body-part breathe" data-part="chest" @click.stop="mark('chest','Chest')" @touchend.stop.prevent="mark('chest','Chest')"/>
-          <path d="M66,168 Q66,202 78,206 L122,206 Q134,202 134,168 Z" class="body-part" data-part="abdomen" @click.stop="mark('abdomen','Abdomen')" @touchend.stop.prevent="mark('abdomen','Abdomen')"/>
+          <!-- TORSO — front: chest/abdomen · back: upper/lower back -->
+          <template v-if="view === 'front'">
+            <path :d="torsoPath" class="body-part breathe" data-part="chest" @click.stop="mark('chest','Chest')" @touchend.stop.prevent="mark('chest','Chest')"/>
+            <path d="M66,168 Q66,202 78,206 L122,206 Q134,202 134,168 Z" class="body-part" data-part="abdomen" @click.stop="mark('abdomen','Abdomen')" @touchend.stop.prevent="mark('abdomen','Abdomen')"/>
+          </template>
+          <template v-else>
+            <path :d="torsoPath" class="body-part" data-part="upper_back" @click.stop="mark('upper_back','Upper Back')" @touchend.stop.prevent="mark('upper_back','Upper Back')"/>
+            <path d="M66,168 Q66,202 78,206 L122,206 Q134,202 134,168 Z" class="body-part" data-part="lower_back" @click.stop="mark('lower_back','Lower Back')" @touchend.stop.prevent="mark('lower_back','Lower Back')"/>
+          </template>
 
           <!-- ARMS — hang vertically at sides -->
           <rect x="46" y="100" width="18" height="70" rx="9" class="body-part" data-part="left_upper_arm" @click.stop="mark('left_upper_arm','Left Upper Arm')" @touchend.stop.prevent="mark('left_upper_arm','Left Upper Arm')"/>
@@ -190,6 +206,15 @@ const rightThighPath = computed(() => isFemale.value
 function sevColor(s) {
   return s === 1 ? '#FCD34D' : s === 2 ? '#F97316' : '#EF4444';
 }
+
+// Reactive CSS: every selected part's shape filled by its severity colour (the
+// "visible colour overlay"). data-part is unique, so one block tints exactly it.
+const highlightCss = computed(() =>
+  markers.value
+    .filter((m) => m.part)
+    .map((m) => `[data-part="${m.part}"]{fill:${sevColor(m.severity)} !important}`)
+    .join('')
+);
 
 // Backfill ids for legacy points ({x,y,severity,label} with no id) so v-for keys
 // stay unique and removeMarker(id) works.

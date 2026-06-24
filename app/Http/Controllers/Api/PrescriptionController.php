@@ -16,6 +16,7 @@ class PrescriptionController extends Controller
         $data = $request->validate([
             'patient_id'           => 'required|exists:patients,id',
             'clinical_record_id'   => 'nullable|exists:clinical_records,id',
+            'visit_id'             => 'nullable|exists:patients_visits,id',
             'items'                => 'required|array|min:1',
             'items.*.medicine_id'  => 'required|exists:medicines,id',
             'items.*.medicine_name'=> 'nullable|string',
@@ -49,6 +50,7 @@ class PrescriptionController extends Controller
         $prescription = Prescription::create([
             'patient_id'         => $data['patient_id'],
             'clinical_record_id' => $data['clinical_record_id'] ?? null,
+            'visit_id'           => $data['visit_id'] ?? null,
             'items'              => $items,
             'medications'        => $items, // backwards compat
             'services'           => $services,

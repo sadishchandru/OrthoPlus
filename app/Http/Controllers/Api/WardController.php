@@ -64,6 +64,8 @@ class WardController extends Controller
     /** Beds belonging to a ward. */
     public function beds(Ward $ward)
     {
-        return response()->json($ward->beds()->orderBy('bed_number')->get());
+        return response()->json(
+            $ward->beds()->with('currentAdmission.patient:id,name,op_number')->orderBy('bed_number')->get()
+        );
     }
 }

@@ -14,7 +14,9 @@ class PatientController extends Controller
     public function index(Request $request)
     {
         $q = $request->get('q') ?? $request->get('search');
+        // List only the light columns — never the base64 photo / documents / intake JSON.
         $patients = Patient::query()
+            ->select(['id', 'op_number', 'name', 'phone', 'dob', 'gender', 'status', 'created_at'])
             ->withCount('clinicalRecords')
             ->when($q, fn($query) => $query->where(function ($query) use ($q) {
                 $query->where('name', like_operator(), "%$q%")
@@ -22,7 +24,7 @@ class PatientController extends Controller
                       ->orWhere('op_number', like_operator(), "%$q%");
             }))
             ->orderByDesc('created_at')
-            ->paginate(15);
+            ->paginate($request->integer('per_page', 15));
 
         // new vs revisit from prior clinical records.
         $patients->getCollection()->transform(function ($p) {
@@ -38,26 +40,29 @@ class PatientController extends Controller
     {
         $data = $request->validate([
             'name'   => 'required|string|max:255',
-            'phone'  => 'required|string|max:20',
+            'phone'  => ['required', 'regex:/^\d{10}$/'],
+            'country_code' => 'nullable|string|max:6',
             'dob'    => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
             'photo'  => 'nullable|string',
             'documents' => 'nullable|array',
             'address'   => 'nullable|array',
+        ], [
+            'phone.regex' => 'Phone must be exactly 10 digits (numbers only).',
         ]);
+        $data['country_code'] = $data['country_code'] ?? '+91';
 
-        // Duplicate check
-        $opNumberCol = Schema::hasColumn('patients', 'op_number') ? 'op_number' : 'op_number_prefix';
-        $dupe = Patient::where('phone', $data['phone'])
-            ->orWhere(fn($q) => $q->whereRaw('LOWER(name) = ?', [strtolower($data['name'])]))
-            ->get(['id', 'name', 'phone', $opNumberCol]);
+        // Hard duplicate = same name + same phone (same person). Shared family
+        // phone with a different name is allowed.
+        $dupe = Patient::whereRaw('LOWER(name) = ?', [strtolower(trim($data['name']))])
+            ->where('phone', $data['phone'])
+            ->first(['id', 'name', 'phone', 'op_number']);
 
-        $warning = null;
-        if ($dupe->isNotEmpty()) {
-            $warning = [
-                'message'   => 'Possible duplicate patient found.',
-                'patients'  => $dupe,
-            ];
+        if ($dupe) {
+            return response()->json([
+                'message' => "{$dupe->name} ({$dupe->phone}) is already registered as {$dupe->op_number}.",
+                'errors'  => ['phone' => ['Patient with this name and phone already exists.']],
+            ], 422);
         }
 
         // Generate OP Number
@@ -73,8 +78,42 @@ class PatientController extends Controller
 
         return response()->json([
             'patient' => $patient,
-            'warning' => $warning,
         ], 201);
+    }
+
+    public function update(Request $request, Patient $patient)
+    {
+        $data = $request->validate([
+            'name'   => 'sometimes|required|string|max:255',
+            'phone'  => ['sometimes', 'required', 'regex:/^\d{10}$/'],
+            'country_code' => 'nullable|string|max:6',
+            'dob'    => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'photo'  => 'nullable|string',
+            'documents' => 'nullable|array',
+            'address'   => 'nullable|array',
+        ], [
+            'phone.regex' => 'Phone must be exactly 10 digits (numbers only).',
+        ]);
+
+        // Duplicate guard (exclude self): same name + phone as another patient.
+        if (isset($data['name']) || isset($data['phone'])) {
+            $name  = strtolower(trim($data['name'] ?? $patient->name));
+            $phone = $data['phone'] ?? $patient->phone;
+            $dupe = Patient::whereKeyNot($patient->id)
+                ->whereRaw('LOWER(name) = ?', [$name])
+                ->where('phone', $phone)
+                ->first(['id', 'name', 'op_number']);
+            if ($dupe) {
+                return response()->json([
+                    'message' => "Another patient ({$dupe->op_number}) already has this name and phone.",
+                    'errors'  => ['phone' => ['Name + phone already used by another patient.']],
+                ], 422);
+            }
+        }
+
+        $patient->update($data); // files in patient_files are untouched → preserved
+        return response()->json(['patient' => $patient]);
     }
 
     public function show(Patient $patient)
