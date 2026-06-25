@@ -65,7 +65,10 @@ class OpdController extends Controller
         // Atomic token allocation (row lock) → no duplicate token numbers under concurrency.
         try {
             $entry = DB::transaction(function () use ($data, $date) {
-                $nextToken = (OpdQueue::whereDate('date', $date)->lockForUpdate()->max('token_number') ?? 0) + 1;
+                // Postgres forbids FOR UPDATE + aggregate (max). Lock the day's rows,
+                // then take the max in PHP — works on pgsql and mysql alike.
+                $nextToken = ((int) OpdQueue::whereDate('date', $date)
+                    ->lockForUpdate()->pluck('token_number')->max()) + 1;
                 return OpdQueue::create([
                     'patient_id'      => $data['patient_id'],
                     'token_number'    => $nextToken,

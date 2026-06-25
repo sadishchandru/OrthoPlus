@@ -36,11 +36,23 @@ class PatientFileController extends Controller
                     'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf'];
 
         foreach ($request->file('files') as $file) {
-            $ext = strtolower($file->getClientOriginalExtension());
-            if (!in_array($ext, $allowed, true)) {
+            $ext  = strtolower($file->getClientOriginalExtension());
+            $mime = (string) $file->getClientMimeType();
+            // Accept by extension OR by MIME — compressed/blob uploads can arrive with
+            // a missing/unknown extension but a valid image/pdf/office MIME type.
+            $mimeOk = str_starts_with($mime, 'image/')
+                || str_starts_with($mime, 'text/')
+                || in_array($mime, [
+                    'application/pdf', 'application/msword', 'application/rtf', 'text/csv',
+                    'application/vnd.ms-excel', 'application/vnd.ms-powerpoint',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                ], true);
+            if (!in_array($ext, $allowed, true) && !$mimeOk) {
                 return response()->json([
-                    'message' => "Unsupported file type: .{$ext}",
-                    'errors'  => ['files' => ["Unsupported file type: .{$ext}. Allowed: " . implode(', ', $allowed)]],
+                    'message' => "Unsupported file type" . ($ext ? ": .{$ext}" : '') . ".",
+                    'errors'  => ['files' => ["Unsupported file. Allowed: " . implode(', ', $allowed)]],
                 ], 422);
             }
         }
