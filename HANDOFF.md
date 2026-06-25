@@ -85,7 +85,7 @@ Separate login portals were added for Clinic Management and Orthopedic HMS.
 | Backend | Laravel 11 (PHP 8) |
 | Frontend | Vue 3 (`<script setup>`) · Pinia · vue-router · vue-toastification · Tailwind CSS v4 |
 | Build | Vite 7 (`@vitejs/plugin-vue` v6, `@tailwindcss/vite`, `laravel-vite-plugin`) |
-| DB | MySQL 8 (database `clinic`) |
+| DB | MySQL 8 (single database `orthoplus` — Clinic + Hospital modules share it) |
 | Calendar | FullCalendar 6 (daygrid/timegrid/list/interaction) |
 | Infra | Docker — see below |
 
@@ -93,12 +93,12 @@ Separate login portals were added for Clinic Management and Orthopedic HMS.
 | Container | Purpose | Port |
 |---|---|---|
 | `laravel_app` | PHP + Laravel (`php artisan serve`) | 8001 → 8000 |
-| `mysql_server` | MySQL 8 (`root`/`showme`, db `clinic`) | 3306 |
+| `mysql_server` | MySQL 8 (`root`/`showme`, db `orthoplus`) | 3306 |
 | `phpmyadmin` | DB UI | 8080 |
 
 - Project is **volume-mounted** into `laravel_app` (`.:/var/www/html`) — host edits are live, no `docker cp`.
 - **No PHP on Windows host** — all artisan via `docker exec laravel_app php artisan <cmd>`.
-- MySQL CLI: `docker exec mysql_server mysql -uroot -pshowme clinic -e "<sql>"`.
+- MySQL CLI: `docker exec mysql_server mysql -uroot -pshowme orthoplus -e "<sql>"`.
 - Frontend build: `npm run build` (host). App served at `http://localhost:8001`.
 
 ⚠️ **Perf caveat:** `php artisan serve` is single-threaded, no opcache → API latency ~3-4s in dev. Production needs **php-fpm + opcache** for <200ms. Caching + indexes already in place; the bottleneck is the dev server, not queries.
@@ -144,7 +144,7 @@ Lightweight **bearer-token** auth (no Sanctum/Passport).
 
 ---
 
-## 3. Database (db `clinic`)
+## 3. Database (single db `orthoplus`)
 
 Core clinical (pre-existing): `patients` (op_number `N-78`), `patients_visits`, `clinical_records` (soap_notes/body_map/vas/rom/ortho_tests/outcome_measures JSON), `appointments`, `services`, `resources`, `treatment_catalog`, `treatments`, `exercises`, `exercise_prescriptions`, `prescriptions`, `invoices`, `packages`, `medicines` (+`medicines_stock`, `consumables`, `inventory_transactions`, `suppliers`), `inventory_logs`, `therapists`, `rooms`.
 
@@ -218,11 +218,11 @@ This repo (`OrthoPlus`) is **Laravel/Vue**. A separate sibling project **`AyuPlu
 - **Appointments:** schema uses `scheduled_date`+`scheduled_time`+`duration_minutes` (NOT `start_at`/`end_at`). Calendar event `start` MUST format date `Y-m-d` (Carbon date cast else invalid ISO → events silently dropped). Conflict check = true time-range overlap via `ADDTIME`.
 - **Auth is frontend-enforced** (router guard + nav). API routes mostly open. For real backend enforcement → add Sanctum + per-route gates (bigger job).
 - Editing a user's roles/pages → that user must **re-login** (or next-load `fetchMe`) to pick up access.
-- Pre-existing unrelated log errors: `clinic.visits` table missing (Patient `visits()` relation), patient `photo` column too short for base64.
+- Pre-existing unrelated log errors: `visits` table missing (Patient `visits()` relation), patient `photo` column too short for base64.
 - `update()` on appointments has no conflict check (only `store`).
 
 ### HMS-era gotchas (2026-06-24)
-- **DB name split (IMPORTANT):** the app (`php artisan serve`) uses MySQL **`clinic`** (all data lives there, `.env DB_DATABASE=clinic`). But `docker-compose.yaml` injects `DB_DATABASE=orthoplus` (kept — the live/Render server needs that name; do NOT change it). Result: **`php artisan migrate` / `tinker` (CLI) hit `orthoplus`, not `clinic`** → new migrations land in the wrong DB. After any `php artisan migrate`, verify the table exists in `clinic` and if not create/alter it directly: `docker exec mysql_server mysql -uroot -pshowme clinic -e "..."`. (MySQL has no `ADD COLUMN IF NOT EXISTS` — that's MariaDB.)
+- **Single DB `orthoplus` (resolved):** both `.env DB_DATABASE` and `docker-compose.yaml` now use **`orthoplus`** — CLI (`php artisan migrate`/`tinker`) and the served app hit the **same** DB. The old `clinic` DB still exists in MySQL as a legacy leftover but is **unused** (safe to drop once confirmed). Clinic + Hospital modules share `orthoplus`; the `module` value on users (`clinic`/`hospital`) is an app feature, NOT a database name — do not rename it. (MySQL has no `ADD COLUMN IF NOT EXISTS` — that's MariaDB; migrations guard with `Schema::hasColumn`.)
 - **Theme is DB-driven:** colors come from `settings` (`branding()`), injected as CSS vars in `app.blade.php`. Don't hardcode hex in components — use `bg-blue-*` (remapped to brand green) or `var(--brand-*)`. Settings → Appearance changes apply globally on save (live preview writes the same vars to `:root`).
 - **Form components want ARRAYS:** `OrthoTests` / `ROMTracker` / `ExerciseLibrary` / `BodyMap3D` `v-model` must be an array (they spread `[...modelValue]`). Passing an object (`{}`) throws "c is not iterable" (minifier may mislabel the stack as another component). `clinical_records.ortho_tests/rom/body_map` are array casts — guard with `Array.isArray` when loading saved JSON.
 - **File uploads:** upload **one file per request** (PHP `post_max_size`). Allowed types validated by **extension** (not `mimes:`, which sniffs docx/xlsx as zip and rejects). Limits set in `docker/laravel/uploads.ini` (25M) — survives rebuild via compose mount + Dockerfile COPY.
@@ -232,13 +232,13 @@ This repo (`OrthoPlus`) is **Laravel/Vue**. A separate sibling project **`AyuPlu
 
 ## 8. Run cheatsheet
 ```bash
-# migrate + seed  (NOTE: CLI migrate uses DB 'orthoplus'; app uses 'clinic' — verify tables in clinic)
+# migrate + seed  (single DB 'orthoplus' — CLI and the served app hit the same one)
 docker exec laravel_app php artisan migrate --force
 docker exec laravel_app php artisan db:seed --force            # OrthoSeeder + TreatmentCatalog + Exercise + IndianMedicines + ClinicalTemplate + Hospital
 docker exec laravel_app php artisan storage:link               # patient file uploads
 docker exec laravel_app php artisan cache:clear                # bust settings/dashboard caches after changes
-# direct DB (the one the app actually uses):
-docker exec mysql_server mysql -uroot -pshowme clinic -e "SHOW TABLES;"
+# direct DB:
+docker exec mysql_server mysql -uroot -pshowme orthoplus -e "SHOW TABLES;"
 # build frontend
 npm run build
 # app: http://localhost:8001   (clinic root/root123 · hospital hadmin/hadmin123)

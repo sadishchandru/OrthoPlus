@@ -63,20 +63,29 @@ class OpdController extends Controller
         }
 
         // Atomic token allocation (row lock) → no duplicate token numbers under concurrency.
-        $entry = DB::transaction(function () use ($data, $date) {
-            $nextToken = (OpdQueue::whereDate('date', $date)->lockForUpdate()->max('token_number') ?? 0) + 1;
-            return OpdQueue::create([
-                'patient_id'      => $data['patient_id'],
-                'token_number'    => $nextToken,
-                'date'            => $date,
-                'doctor_id'       => $data['doctor_id'] ?? null,
-                'priority'        => $data['priority'] ?? 'normal',
-                'chief_complaint' => $data['chief_complaint'] ?? null,
-                'vitals'          => $data['vitals'] ?? null,
-                'status'          => 'waiting',
-                'arrival_time'    => now(),
-            ]);
-        });
+        try {
+            $entry = DB::transaction(function () use ($data, $date) {
+                $nextToken = (OpdQueue::whereDate('date', $date)->lockForUpdate()->max('token_number') ?? 0) + 1;
+                return OpdQueue::create([
+                    'patient_id'      => $data['patient_id'],
+                    'token_number'    => $nextToken,
+                    'date'            => $date,
+                    'doctor_id'       => $data['doctor_id'] ?? null,
+                    'priority'        => $data['priority'] ?? 'normal',
+                    'chief_complaint' => $data['chief_complaint'] ?? null,
+                    'vitals'          => $data['vitals'] ?? null,
+                    'status'          => 'waiting',
+                    'arrival_time'    => now(),
+                ]);
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Don't 500. Surface a clean message; full error goes to the log.
+            report($e);
+            return response()->json([
+                'message' => 'Could not add patient to the queue. The OPD tables may be out of date — run migrations.',
+                'errors'  => ['queue' => ['Database error while creating the queue entry.']],
+            ], 422);
+        }
 
         return response()->json($entry->load('patient:id,name,op_number'), 201);
     }

@@ -16,6 +16,9 @@ echo "=== Step 4: Seed database — all seeders, non-fatal, idempotent ==="
 # DatabaseSeeder calls Ortho + TreatmentCatalog + Exercise + IndianMedicines.
 php artisan db:seed --force 2>&1 || echo "Seeding skipped/failed — continuing boot"
 
+echo "=== Step 4b: Storage symlink (serve patient file uploads) ==="
+php artisan storage:link 2>&1 || echo "storage:link exists/failed — continuing"
+
 echo "=== Step 5: Fix Apache port ==="
 sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
 sed -i 's/:80>/:8080>/' /etc/apache2/sites-available/000-default.conf

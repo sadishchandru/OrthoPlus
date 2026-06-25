@@ -14,6 +14,10 @@ WORKDIR /var/www/html
 # Copy all files
 COPY . .
 
+# PHP upload limits (patient files up to 25 MB). Without this, live PHP defaults
+# (upload_max_filesize=2M) silently drop larger uploads → /patients/{id}/files 422.
+COPY docker/laravel/uploads.ini /usr/local/etc/php/conf.d/zz-orthoplus-uploads.ini
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
