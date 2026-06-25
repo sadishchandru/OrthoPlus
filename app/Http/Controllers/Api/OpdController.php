@@ -48,16 +48,18 @@ class OpdController extends Controller
 
         $date = $data['date'] ?? now()->toDateString();
 
-        // Block the same patient being queued twice while still active today.
+        // Block re-adding: active (waiting/in-progress) OR already completed today.
+        // (A cancelled entry may be re-added.)
         $existing = OpdQueue::whereDate('date', $date)
             ->where('patient_id', $data['patient_id'])
-            ->whereIn('status', ['waiting', 'in-progress'])
-            ->first();
+            ->whereIn('status', ['waiting', 'in-progress', 'completed'])
+            ->latest('id')->first();
         if ($existing) {
-            return response()->json([
-                'message' => 'This patient is already in today\'s queue (Token #'
-                    . str_pad($existing->token_number, 3, '0', STR_PAD_LEFT) . ', ' . $existing->status . ').',
-            ], 422);
+            $msg = $existing->status === 'completed'
+                ? 'Consultation already completed today — this patient cannot be added to the queue again.'
+                : 'This patient is already in today\'s queue (Token #'
+                    . str_pad($existing->token_number, 3, '0', STR_PAD_LEFT) . ', ' . $existing->status . ').';
+            return response()->json(['message' => $msg], 422);
         }
 
         // Atomic token allocation (row lock) → no duplicate token numbers under concurrency.
@@ -102,6 +104,7 @@ class OpdController extends Controller
             'vitals'           => 'nullable|array',
             'soap_notes'       => 'nullable|array',
             'body_map'         => 'nullable|array',
+            'pain_description' => 'nullable|string',
             'vas_score'        => 'nullable|numeric',
             'rom'              => 'nullable|array',
             'ortho_tests'      => 'nullable|array',
@@ -115,20 +118,46 @@ class OpdController extends Controller
             'seen_time'       => $opd_queue->seen_time ?? now(),
         ]);
 
-        $record = ClinicalRecord::create([
+        $fields = [
             'patient_id'       => $opd_queue->patient_id,
             'soap_notes'       => $data['soap_notes'] ?? [],
             'body_map'         => $data['body_map'] ?? [],
+            'pain_description' => $data['pain_description'] ?? null,
             'vas_score'        => $data['vas_score'] ?? 0,
             'rom'              => $data['rom'] ?? [],
             'ortho_tests'      => $data['ortho_tests'] ?? [],
             'outcome_measures' => $data['outcome_measures'] ?? [],
-            'created_by'       => auth()->id(),
-        ]);
+        ];
+
+        // Edit re-uses the linked record → NO duplicate consultation on re-save.
+        if ($opd_queue->clinical_record_id && ($record = ClinicalRecord::find($opd_queue->clinical_record_id))) {
+            $record->update($fields);
+        } else {
+            $record = ClinicalRecord::create($fields + ['created_by' => auth()->id()]);
+            $opd_queue->update(['clinical_record_id' => $record->id]);
+        }
 
         return response()->json([
-            'queue'           => $opd_queue,
+            'queue'           => $opd_queue->fresh(),
             'clinical_record' => $record,
+        ]);
+    }
+
+    /** Load a completed consultation for editing/printing (record + latest prescription). */
+    public function getConsultation(OpdQueue $opd_queue)
+    {
+        $record = $opd_queue->clinical_record_id
+            ? ClinicalRecord::find($opd_queue->clinical_record_id)
+            : null;
+
+        // Latest prescription for this patient (OPD scripts aren't always record-linked).
+        $rx = \App\Models\Prescription::where('patient_id', $opd_queue->patient_id)
+            ->latest('id')->first(['id', 'patient_id', 'clinical_record_id']);
+
+        return response()->json([
+            'queue'           => $opd_queue->load('patient:id,name,op_number,gender,dob'),
+            'clinical_record' => $record,
+            'prescription'    => $rx,
         ]);
     }
 

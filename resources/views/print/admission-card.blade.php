@@ -12,17 +12,17 @@ $pat = $adm->patient;
 <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', Arial, sans-serif; background: #f3f4f6; }
-    .card { width: 86mm; height: 54mm; margin: 0 auto; background: #fff; border: 1px solid #1e3a8a; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
-    .top { background: #1e3a8a; color: #fff; padding: 4px 10px; display:flex; justify-content:space-between; align-items:center; }
+    .card { width: 86mm; height: 54mm; margin: 0 auto; background: #fff; border: 1px solid #2E7D32; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+    .top { background: #2E7D32; color: #fff; padding: 4px 10px; display:flex; justify-content:space-between; align-items:center; }
     .top .c { font-size: 13px; font-weight: 700; }
     .top .ip { font-size: 11px; font-family:'Courier New',monospace; }
     .body { flex: 1; display: flex; padding: 8px 10px; gap: 10px; }
     .photo { width: 22mm; height: 28mm; border: 1px solid #cbd5e1; border-radius: 4px; object-fit: cover; background:#f1f5f9; flex-shrink:0; }
     .info { flex: 1; font-size: 11px; }
-    .info .name { font-size: 15px; font-weight: 700; color:#1e3a8a; margin-bottom: 4px; }
+    .info .name { font-size: 15px; font-weight: 700; color:#2E7D32; margin-bottom: 4px; }
     .info .r { padding: 1px 0; }
     .info .k { color: #64748b; }
-    .btn { margin: 10px auto; display:block; padding:8px 16px; background:#1e3a8a; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; }
+    .btn { margin: 10px auto; display:block; padding:8px 16px; background:#2E7D32; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; }
     @media print { body { background:#fff; } .no-print { display:none !important; } @page { margin: 6mm; } }
 </style>
 </head>

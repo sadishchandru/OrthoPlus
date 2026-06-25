@@ -18,7 +18,7 @@ $lines = [
 @section('content')
 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
     <div>
-        <h2 style="font-size:18px; font-weight:700; color:#1e3a8a;">{{ $t['ip_bill'] }}</h2>
+        <h2 style="font-size:18px; font-weight:700; color:#2E7D32;">{{ $t['ip_bill'] }}</h2>
         <div style="font-size:12px; color:#555; margin-top:4px;">
             <div><strong>{{ $t['bill_no'] }}:</strong> {{ $bill->id }}</div>
             <div><strong>{{ $t['bill_date'] }}:</strong> {{ \Carbon\Carbon::parse($bill->bill_date)->format('d M Y') }}</div>
@@ -30,7 +30,7 @@ $lines = [
     </span>
 </div>
 
-<div style="background:#eff6ff; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
+<div style="background:#F1F8F2; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
     <div><strong>{{ $t['patient_name'] }}:</strong> {{ $pat->name ?? '—' }} &nbsp; <strong>{{ $t['op_number'] }}:</strong> {{ $pat->op_number ?? '—' }}</div>
     <div><strong>{{ $t['ward'] }}:</strong> {{ $adm->ward->name ?? '—' }} &nbsp; <strong>{{ $t['bed'] }}:</strong> {{ $adm->bed->bed_number ?? '—' }}</div>
 </div>
@@ -52,7 +52,7 @@ $lines = [
         <tr><td style="border:none; padding:3px 8px; color:#6b7280;">{{ $t['subtotal'] }}</td><td style="border:none; padding:3px 8px; text-align:right;">₹{{ number_format($bill->subtotal, 2) }}</td></tr>
         @if($bill->discount > 0)<tr><td style="border:none; padding:3px 8px; color:#6b7280;">{{ $t['discount'] }}</td><td style="border:none; padding:3px 8px; text-align:right; color:#16a34a;">- ₹{{ number_format($bill->discount, 2) }}</td></tr>@endif
         @if($bill->gst > 0)<tr><td style="border:none; padding:3px 8px; color:#6b7280;">{{ $t['tax'] }}</td><td style="border:none; padding:3px 8px; text-align:right;">₹{{ number_format($bill->gst, 2) }}</td></tr>@endif
-        <tr style="border-top:2px solid #1e3a8a;"><td style="border:none; padding:6px 8px; font-weight:700; font-size:14px; color:#1e3a8a;">{{ $t['total'] }}</td><td style="border:none; padding:6px 8px; text-align:right; font-weight:700; font-size:16px; color:#1e3a8a;">₹{{ number_format($bill->total, 2) }}</td></tr>
+        <tr style="border-top:2px solid #2E7D32;"><td style="border:none; padding:6px 8px; font-weight:700; font-size:14px; color:#2E7D32;">{{ $t['total'] }}</td><td style="border:none; padding:6px 8px; text-align:right; font-weight:700; font-size:16px; color:#2E7D32;">₹{{ number_format($bill->total, 2) }}</td></tr>
         <tr><td style="border:none; padding:3px 8px; color:#6b7280;">{{ $t['paid'] }}</td><td style="border:none; padding:3px 8px; text-align:right;">₹{{ number_format($bill->paid, 2) }}</td></tr>
         <tr><td style="border:none; padding:3px 8px; color:#6b7280; font-weight:600;">{{ $t['balance'] }}</td><td style="border:none; padding:3px 8px; text-align:right; font-weight:700; color:{{ $bill->balance > 0 ? '#991b1b' : '#166534' }};">₹{{ number_format($bill->balance, 2) }}</td></tr>
     </table>

@@ -1,6 +1,42 @@
 # OrthoPlus — Architecture & Handoff
 
-Orthopedic & physiotherapy clinic management system. Single-page Vue app on a Laravel JSON API.
+Orthopedic & physiotherapy clinic management system. Single-page Vue app on a Laravel JSON API. Now also a full Orthopedic **Hospital Management System (HMS)** layered on top.
+
+---
+
+## Latest Update — Hospital HMS, Branding & OPD (2026-06-24)
+
+Large additive build on top of the clinic. **No existing clinic module was rewritten** — everything is new files/routes/columns, backward compatible.
+
+### Hospital modules (in-patient HMS)
+- **24 new tables** (migrations `2026_06_23_210001..210008`, guarded `if(!hasTable)`, MySQL+pgsql safe): wards, beds, admissions (`ip_number` IP-YYYY-NNN), bed_transfers, discharge_summaries, staff (`STF-001`), staff_shifts, leave_requests, opd_queue, opd_visits, surgeries, implants, implant_usage, pre_op_plans, preference_cards, op_orders, op_fittings, imaging_orders, imaging_studies, charge_master, ip_bills, global_periods, clinical_templates, cast_injection_log.
+- **24 models** (`app/Models`), **17 `Api\` controllers** + `Hospital\HospitalReportController`. Admission/transfer/discharge flip bed status in transactions. IP-bill auto-computes room (bed daily_charge × whole nights — Carbon 3 `diffInDays()` returns FLOAT, use `startOfDay`) + implant charges.
+- Routes: flat `/api/*` **and** a `/api/hospital/*` alias group (→ same `Api\` controllers + hospital report). Custom GET routes registered before `apiResource` wildcards.
+- **HospitalSeeder**: 5 wards → 52 beds + 13 charge_master. **ClinicalTemplateSeeder**: 11 ortho templates. Both idempotent, in DatabaseSeeder.
+- Frontend pages under `pages/Hospital/*` + the shared `HmsIcon.vue` (outline medical icon set replacing letter badges) + `HospitalLayout.vue` (sidebar/header use `var(--brand-sidebar/header)`, single logo → `/hospital/dashboard`).
+- **7 print Blade views** (`resources/views/print/`): admission-card, ip-bill, discharge-summary, surgery-note, opd-token (80mm), pre-op-plan, implant-sticker. `?lang=en|ta|hi`.
+
+### OPD flow
+- **Registration** (`/hospital/opd-registration`): patient list with `display_op_number` (N-9 → N-9-1 revisit suffix), visit_count, **Last Visit** date, queue-status badge, actions Edit/Files/Print/Add-to-Queue (Add hidden once queued/completed).
+- **Consulting** (`/hospital/opd-consulting`): 2-pane doctor screen. Reuses clinic VisitHistory, TreatmentTracker, ExerciseLibrary (`/exercises/prescribe`), PrescriptionForm, SOAPNotes, ROMTracker, OrthoTests, VASSlider; 3D `BodyMap3D` (three.js, gender model) + **pain description** textarea (10–15 words). `saveConsultation` updateOrCreate's the **linked** `clinical_record` (`opd_queue.clinical_record_id`) → re-save = edit, **no duplicate**. `GET …/consult` loads a completed consult for edit/print. Completed token → Edit/Print only (no Done). Queue add blocks same patient when active OR completed today.
+
+### Branding / theme / print engine (DB-driven, cached, global)
+- `settings` table (key/value-JSON/group) + `Setting` model (`Cache::rememberForever('app_settings_all')`, busts on write). Groups: `theme`/`brand`/`print`. Defaults in `config/branding.php`; helper `branding()` merges config⊕DB (try/catch-safe).
+- `SettingController` GET/PUT `/api/settings/branding` (root). **Applied globally with zero runtime API**: `app.blade.php` server-renders `<style id="brand-theme">:root{…}</style>` (remaps Tailwind `--color-blue-*`→brand green, `--brand-sidebar/header`, font/radius, status vars) + `window.__BRAND__`.
+- Settings tabs: **Appearance** (`AppearanceSettings.vue`, live preview = writes the same CSS vars to `:root`) + **Print Designer** (`PrintSettings.vue`, header builder + 4 styles + live preview). Print `layout.blade.php` reads `branding()` (logo, name/address/reg/gst/NABH, watermark, footer, margins, colors).
+- Whole app already re-skinned **OrthoPlus green** (`#2E7D32/#4CAF50/#81C784`, bg `#F8FAF8`) via the `@theme` blue→green remap in `resources/css/app.css` — every legacy `bg-blue-*` util is green; `Logo.vue` SVG mark + `public/favicon.svg`.
+
+### Files: real uploads + camera
+- `patient_files` table + `PatientFile` model (`url` = relative `/storage/...`) + `PatientFileController` (multi-upload, **one request per file** to dodge `post_max_size`, extension whitelist not `mimes:`, 25 MB). `FileGallery.vue` (thumbnails, ImageLightbox zoom, camera capture + client compress, download, delete, permission props). PHP limits raised via `docker/laravel/uploads.ini` (mounted in compose + baked in Dockerfile). Ran `php artisan storage:link`.
+
+### Patient register
+- Phone = `country_code` (default `+91`, single combined field) + exactly-10-digit national (regex + UI). Duplicate = same **name+phone** (phone-unique dropped — families share phones). `PatientController@update` + `PUT /api/patients/{id}` (edit mode in `PatientForm`).
+
+### Dashboard
+- `Hospital/Dashboard.vue`: 8 themed stat cards, **registration-trend SVG chart** (daily/weekly/monthly toggle, y-axis, tooltip, animation — dep-free), Quick Actions, Today's Queue, Recent Patients. One cached call to `HospitalReportController@dashboard`.
+
+### Verification
+- `npm run build` clean throughout. Backend smoke-tested via curl (admit/transfer/discharge, OPD consult no-dup, file upload docx/xlsx/4MB-pdf, branding live apply, dashboard payload).
 
 ---
 
@@ -185,15 +221,25 @@ This repo (`OrthoPlus`) is **Laravel/Vue**. A separate sibling project **`AyuPlu
 - Pre-existing unrelated log errors: `clinic.visits` table missing (Patient `visits()` relation), patient `photo` column too short for base64.
 - `update()` on appointments has no conflict check (only `store`).
 
+### HMS-era gotchas (2026-06-24)
+- **DB name split (IMPORTANT):** the app (`php artisan serve`) uses MySQL **`clinic`** (all data lives there, `.env DB_DATABASE=clinic`). But `docker-compose.yaml` injects `DB_DATABASE=orthoplus` (kept — the live/Render server needs that name; do NOT change it). Result: **`php artisan migrate` / `tinker` (CLI) hit `orthoplus`, not `clinic`** → new migrations land in the wrong DB. After any `php artisan migrate`, verify the table exists in `clinic` and if not create/alter it directly: `docker exec mysql_server mysql -uroot -pshowme clinic -e "..."`. (MySQL has no `ADD COLUMN IF NOT EXISTS` — that's MariaDB.)
+- **Theme is DB-driven:** colors come from `settings` (`branding()`), injected as CSS vars in `app.blade.php`. Don't hardcode hex in components — use `bg-blue-*` (remapped to brand green) or `var(--brand-*)`. Settings → Appearance changes apply globally on save (live preview writes the same vars to `:root`).
+- **Form components want ARRAYS:** `OrthoTests` / `ROMTracker` / `ExerciseLibrary` / `BodyMap3D` `v-model` must be an array (they spread `[...modelValue]`). Passing an object (`{}`) throws "c is not iterable" (minifier may mislabel the stack as another component). `clinical_records.ortho_tests/rom/body_map` are array casts — guard with `Array.isArray` when loading saved JSON.
+- **File uploads:** upload **one file per request** (PHP `post_max_size`). Allowed types validated by **extension** (not `mimes:`, which sniffs docx/xlsx as zip and rejects). Limits set in `docker/laravel/uploads.ini` (25M) — survives rebuild via compose mount + Dockerfile COPY.
+- **Stale-bundle crashes:** a `TypeError` whose stack points at `build/assets/<Name>-<hash>.js` with an OLD hash = cached bundle. Rebuild + hard-refresh before debugging.
+
 ---
 
 ## 8. Run cheatsheet
 ```bash
-# migrate + seed
+# migrate + seed  (NOTE: CLI migrate uses DB 'orthoplus'; app uses 'clinic' — verify tables in clinic)
 docker exec laravel_app php artisan migrate --force
-docker exec laravel_app php artisan db:seed --class=OrthoSeeder --force
-docker exec laravel_app php artisan db:seed --class=IndianMedicinesSeeder --force
+docker exec laravel_app php artisan db:seed --force            # OrthoSeeder + TreatmentCatalog + Exercise + IndianMedicines + ClinicalTemplate + Hospital
+docker exec laravel_app php artisan storage:link               # patient file uploads
+docker exec laravel_app php artisan cache:clear                # bust settings/dashboard caches after changes
+# direct DB (the one the app actually uses):
+docker exec mysql_server mysql -uroot -pshowme clinic -e "SHOW TABLES;"
 # build frontend
 npm run build
-# app: http://localhost:8001   (login root/root123)
+# app: http://localhost:8001   (clinic root/root123 · hospital hadmin/hadmin123)
 ```

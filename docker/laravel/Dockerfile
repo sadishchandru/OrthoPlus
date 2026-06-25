@@ -17,6 +17,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 # Install only the necessary PHP extensions (others are built-in)
 RUN docker-php-ext-install pdo_mysql gd bcmath
 
+# Patient file-upload limits (25 MB files, many docs per save)
+COPY uploads.ini /usr/local/etc/php/conf.d/zz-orthoplus-uploads.ini
+
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

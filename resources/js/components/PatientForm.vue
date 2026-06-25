@@ -57,7 +57,7 @@
     <!-- Documents: real upload to patient_files (image/pdf/doc) -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Documents</label>
-      <input @change="onDocuments" type="file" multiple accept="image/*,application/pdf,.doc,.docx" class="text-sm text-gray-500" />
+      <input @change="onDocuments" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf" class="text-sm text-gray-500" />
       <p v-if="docFiles.length" class="text-xs text-gray-500 mt-1">{{ docFiles.length }} file(s) ready — saved on {{ isEdit ? 'update' : 'register' }}.</p>
 
       <!-- In edit mode, manage existing files inline (preserved across edits) -->
@@ -142,7 +142,7 @@ function onPhoneInput(e) {
 // One request per file → never trips PHP post_max_size (8M) with many docs.
 async function uploadDocs(patientId) {
   for (const f of docFiles.value) {
-    if (f.size > 10 * 1024 * 1024) { toast.error(`${f.name} skipped (over 10 MB)`); continue; }
+    if (f.size > 25 * 1024 * 1024) { toast.error(`${f.name} skipped (over 25 MB)`); continue; }
     const out = f.type.startsWith('image/') ? await compress(f) : f;
     const fd = new FormData();
     fd.append('module', 'registration');

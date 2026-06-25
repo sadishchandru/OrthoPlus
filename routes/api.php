@@ -130,6 +130,10 @@ Route::prefix('settings')->middleware('role:root')->group(function () {
 
     Route::get('users/roles', [UserController::class, 'roles']);
     Route::apiResource('users', UserController::class)->except(['show']);
+
+    // Branding / theme / print designer (root only)
+    Route::get('branding', [\App\Http\Controllers\Api\SettingController::class, 'show']);
+    Route::put('branding', [\App\Http\Controllers\Api\SettingController::class, 'update']);
 });
 
 // ==========================================================================
@@ -228,6 +232,7 @@ Route::prefix('hospital')->group(function () {
     Route::get('opd/queue', [OpdController::class, 'todayQueue']);
     Route::post('opd/queue', [OpdController::class, 'addToQueue']);
     Route::patch('opd/queue/{opd_queue}/status', [OpdController::class, 'updateStatus']);
+    Route::get('opd/queue/{opd_queue}/consult', [OpdController::class, 'getConsultation']);
     Route::post('opd/queue/{opd_queue}/consult', [OpdController::class, 'saveConsultation']);
 
     // Staff

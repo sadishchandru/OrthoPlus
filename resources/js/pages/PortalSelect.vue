@@ -31,7 +31,7 @@
             <span class="arrow text-slate-800">Login</span>
           </div>
           <div class="mt-8 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-            <div class="h-full w-2/3 bg-[#1e3a5f] transition-all group-hover:w-full"></div>
+            <div class="h-full w-2/3 bg-[#1F5523] transition-all group-hover:w-full"></div>
           </div>
         </router-link>
       </div>

@@ -1,0 +1,16 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="OrthoPlus">
+  <defs>
+    <linearGradient id="opg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2E7D32"/><stop offset="1" stop-color="#81C784"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#F1F8F2"/>
+  <g transform="translate(0,1)">
+    <path d="M52 18 A28 28 0 1 0 53 44" fill="none" stroke="url(#opg)" stroke-width="4" stroke-linecap="round"/>
+    <path d="M16 44 q16 16 32 2 q-6 12 -20 11 q-12 -1 -12 -13 Z" fill="url(#opg)" opacity="0.92"/>
+    <g fill="#3F8F43">
+      <circle cx="30" cy="14" r="2"/><circle cx="31" cy="20" r="2.6"/><circle cx="30.5" cy="26.5" r="3.1"/>
+      <circle cx="31.5" cy="33" r="3.6"/><circle cx="31" cy="40" r="4.1"/><circle cx="32" cy="47" r="4.6"/>
+    </g>
+  </g>
+</svg>

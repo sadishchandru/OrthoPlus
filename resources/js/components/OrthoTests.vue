@@ -87,11 +87,11 @@ const COMMON_TESTS = [
 const props = defineProps({ modelValue: { type: Array, default: () => [] } });
 const emit = defineEmits(['update:modelValue']);
 
-const rows = ref(props.modelValue.length ? [...props.modelValue] : []);
+const rows = ref(Array.isArray(props.modelValue) ? [...props.modelValue] : []);
 const showCustom = ref(false);
 const customTest = ref('');
 
-watch(() => props.modelValue, v => { rows.value = [...v]; });
+watch(() => props.modelValue, v => { rows.value = Array.isArray(v) ? [...v] : []; });
 
 function isSelected(test) { return rows.value.some(r => r.name === test); }
 

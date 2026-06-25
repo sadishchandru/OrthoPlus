@@ -9,7 +9,7 @@ class OpdQueue extends Model
     protected $table = 'opd_queue';
 
     protected $fillable = [
-        'patient_id', 'token_number', 'date', 'doctor_id',
+        'patient_id', 'clinical_record_id', 'token_number', 'date', 'doctor_id',
         'status', 'priority', 'arrival_time', 'seen_time',
         'chief_complaint', 'vitals',
     ];
@@ -23,4 +23,5 @@ class OpdQueue extends Model
     ];
 
     public function patient() { return $this->belongsTo(Patient::class); }
+    public function clinicalRecord() { return $this->belongsTo(ClinicalRecord::class); }
 }

@@ -29,8 +29,12 @@ import ExerciseForm from '../components/settings/ExerciseForm.vue';
 import MedicineForm from '../components/settings/MedicineForm.vue';
 import TherapistForm from '../components/settings/TherapistForm.vue';
 import UserForm from '../components/settings/UserForm.vue';
+import AppearanceSettings from '../components/settings/AppearanceSettings.vue';
+import PrintSettings from '../components/settings/PrintSettings.vue';
 
 const tabs = [
+  { key: 'appearance', label: 'Appearance',     comp: AppearanceSettings },
+  { key: 'print',      label: 'Print Designer',  comp: PrintSettings },
   { key: 'treatments', label: 'Treatments',  comp: TreatmentCatalogForm },
   { key: 'exercises',  label: 'Exercises',   comp: ExerciseForm },
   { key: 'medicines',  label: 'Medicines',   comp: MedicineForm },
@@ -38,6 +42,6 @@ const tabs = [
   { key: 'users',      label: 'Users',       comp: UserForm },
 ];
 
-const active = ref('treatments');
+const active = ref('appearance');
 const activeComponent = computed(() => tabs.find((t) => t.key === active.value).comp);
 </script>

@@ -6,7 +6,7 @@ $t = printLang(request('lang', 'en'));
 @section('title', $t['consent_title'])
 
 @section('content')
-<h2 style="font-size:18px; font-weight:700; color:#1e3a8a; text-align:center; margin-bottom:20px;">
+<h2 style="font-size:18px; font-weight:700; color:#2E7D32; text-align:center; margin-bottom:20px;">
     {{ $t['consent_title'] }}
 </h2>
 

@@ -10,7 +10,7 @@ class ClinicalRecord extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'patient_id', 'visit_no', 'soap_notes', 'body_map',
+        'patient_id', 'visit_no', 'soap_notes', 'body_map', 'pain_description',
         'vas_score', 'rom', 'ortho_tests', 'outcome_measures',
         'gait_video', 'created_by', 'updated_by',
     ];

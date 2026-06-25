@@ -14,6 +14,31 @@
     --breakpoint-xs: 320px;
     --breakpoint-2xl: 1440px;
     --breakpoint-3xl: 1920px;
+
+    /* ===== OrthoPlus brand palette (centralized — single source of truth) ===== */
+    --color-brand:        #2E7D32; /* primary   */
+    --color-brand-light:  #4CAF50; /* secondary */
+    --color-brand-accent: #81C784; /* accent    */
+    --color-brand-bg:     #F8FAF8; /* app background */
+    --color-brand-text:   #1F2937; /* text dark */
+
+    /* Remap the legacy "blue" ramp → OrthoPlus green. Every existing
+       bg-blue-* / text-blue-* / ring-blue-* / border-blue-* utility becomes
+       on-brand with NO markup changes (backward compatible, minimal rework). */
+    --color-blue-50:  #F1F8F2;
+    --color-blue-100: #DCEFDD;
+    --color-blue-200: #B7E0B9;
+    --color-blue-300: #93D096;
+    --color-blue-400: #66BB6A;
+    --color-blue-500: #4CAF50;
+    --color-blue-600: #2E7D32;
+    --color-blue-700: #276B2B;
+    --color-blue-800: #1F5523;
+    --color-blue-900: #173F1A;
+    --color-blue-950: #0E2C11;
+
+    /* App canvas → soft medical background (App.vue root uses bg-gray-50). */
+    --color-gray-50: #F8FAF8;
 }
 
 /* --- Responsive / touch base --- */

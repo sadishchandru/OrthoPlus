@@ -1,14 +1,11 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#1e3a5f] px-4 py-8 relative overflow-hidden">
+  <div class="min-h-screen flex items-center justify-center bg-[#1F5523] px-4 py-8 relative overflow-hidden">
     <div class="absolute inset-0 opacity-10 bone-pattern"></div>
 
     <div class="relative bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
       <div class="text-center mb-6">
-        <div class="mx-auto mb-4 w-14 h-14 rounded-lg bg-[#1e3a5f] text-white flex items-center justify-center font-bold tracking-wide">
-          HMS
-        </div>
-        <h1 class="text-2xl font-bold text-[#1e3a5f]">OrthoPlus Hospital Management</h1>
-        <p class="text-gray-500 text-sm">Orthopedic Hospital Management System</p>
+        <Logo variant="full" class="h-12 mx-auto mb-2" />
+        <p class="text-gray-500 text-sm font-medium">Hospital Management System</p>
       </div>
 
       <form @submit.prevent="submit" class="space-y-4">
@@ -29,8 +26,8 @@
       </form>
 
       <div class="mt-5 flex items-center justify-between gap-3 text-xs">
-        <router-link to="/" class="text-gray-500 hover:text-[#1e3a5f]">Choose portal</router-link>
-        <router-link to="/clinic/login" class="text-[#1e3a5f] font-medium hover:underline">Clinic login</router-link>
+        <router-link to="/" class="text-gray-500 hover:text-[#1F5523]">Choose portal</router-link>
+        <router-link to="/clinic/login" class="text-[#1F5523] font-medium hover:underline">Clinic login</router-link>
       </div>
 
       <div class="mt-6 text-xs text-gray-400 text-center leading-relaxed">
@@ -45,6 +42,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Logo from '../components/Logo.vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/auth';
 
@@ -80,8 +78,8 @@ async function submit() {
 
 <style scoped>
 @reference "tailwindcss";
-.input { @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 outline-none; --tw-ring-color: #1e3a5f; }
-.btn-primary { @apply text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; background-color: #1e3a5f; }
+.input { @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 outline-none; --tw-ring-color: #1F5523; }
+.btn-primary { @apply text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; background-color: #1F5523; }
 .btn-primary:hover { background-color: #172f4d; }
 .bone-pattern {
   background-image:

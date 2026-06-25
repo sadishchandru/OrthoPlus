@@ -8,11 +8,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
-          <span class="font-bold text-blue-700 text-sm md:text-base whitespace-nowrap">
-            <span class="hidden sm:inline">OrthoPlus</span>
-            <span class="sm:hidden">OP</span>
-          </span>
-          <span class="text-xs text-gray-400 hidden lg:inline">Clinic Management</span>
+          <router-link to="/" class="flex items-center" aria-label="OrthoPlus">
+            <Logo variant="full" class="h-8 hidden sm:block" />
+            <Logo variant="mark" class="h-8 sm:hidden" />
+          </router-link>
         </div>
 
         <nav class="hidden sm:flex flex-nowrap items-center justify-center gap-1 flex-1 min-w-0 overflow-x-auto scrollbar-hide">
@@ -98,6 +97,7 @@
 import { computed, ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
+import Logo from './components/Logo.vue';
 
 const route = useRoute();
 const router = useRouter();

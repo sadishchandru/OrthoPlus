@@ -24,7 +24,7 @@ $emergency = $q->priority === 'emergency';
     .name { font-size: 16px; font-weight: 600; margin-top: 6px; }
     .meta { font-size: 11px; color: #555; margin-top: 2px; }
     .flag { display:inline-block; margin-top:6px; font-size:12px; font-weight:700; color:#b91c1c; }
-    .btn { margin: 10px auto; display:block; padding:8px 16px; background:#1e3a8a; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; }
+    .btn { margin: 10px auto; display:block; padding:8px 16px; background:#2E7D32; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; }
     @media print { body { background:#fff; } .no-print { display:none !important; } @page { margin: 0; } }
 </style>
 </head>

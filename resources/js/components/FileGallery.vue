@@ -5,7 +5,7 @@
       <div v-if="canUpload" class="flex gap-2">
         <button type="button" @click="pick.click()" class="btn-xs">📎 Upload</button>
         <button type="button" @click="cam.click()" class="btn-xs">📷 Take Photo</button>
-        <input ref="pick" type="file" multiple accept="image/*,application/pdf,.doc,.docx" class="hidden" @change="onFiles" />
+        <input ref="pick" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf" class="hidden" @change="onFiles" />
         <input ref="cam" type="file" accept="image/*" capture="environment" class="hidden" @change="onFiles" />
       </div>
     </div>
@@ -93,7 +93,7 @@ async function onFiles(e) {
     let i = 0;
     for (const file of picked) {
       progress.value = `${++i}/${picked.length}`;
-      if (file.size > 10 * 1024 * 1024) { toast.error(`${file.name} skipped (over 10 MB)`); continue; }
+      if (file.size > 25 * 1024 * 1024) { toast.error(`${file.name} skipped (over 25 MB)`); continue; }
       const out = file.type.startsWith('image/') ? await compress(file) : file;
       const fd = new FormData();
       if (props.module) fd.append('module', props.module);

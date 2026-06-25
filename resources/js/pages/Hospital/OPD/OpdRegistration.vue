@@ -18,16 +18,22 @@
             <th class="px-4 py-3 text-left">OP Number</th>
             <th class="px-4 py-3 text-left hidden sm:table-cell">Phone</th>
             <th class="px-4 py-3 text-center">Visits</th>
+            <th class="px-4 py-3 text-left hidden md:table-cell">Last Visit</th>
             <th class="px-4 py-3 text-center">Type</th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="p in patients" :key="p.id" class="border-t border-gray-100 hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-gray-800">{{ p.name }}</td>
-            <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ p.op_number }}</td>
+            <td class="px-4 py-3 font-medium text-gray-800">
+              {{ p.name }}
+              <span v-if="p.queue_status_today === 'completed'" class="ml-2 text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium align-middle">Consultation Completed</span>
+              <span v-else-if="p.queue_status_today === 'waiting' || p.queue_status_today === 'in-progress'" class="ml-2 text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium align-middle">In Queue</span>
+            </td>
+            <td class="px-4 py-3 font-mono text-xs text-gray-600">{{ p.display_op_number || p.op_number }}</td>
             <td class="px-4 py-3 text-gray-600 hidden sm:table-cell">{{ p.phone || '—' }}</td>
             <td class="px-4 py-3 text-center text-gray-700">{{ p.visit_count ?? p.clinical_records_count ?? 0 }}</td>
+            <td class="px-4 py-3 text-gray-600 hidden md:table-cell text-xs">{{ p.last_visit_date ? fmtDate(p.last_visit_date) : '—' }}</td>
             <td class="px-4 py-3 text-center">
               <span :class="(p.visit_type === 'revisit') ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'"
                     class="text-xs px-2 py-0.5 rounded-full font-medium">
@@ -35,12 +41,16 @@
               </span>
             </td>
             <td class="px-4 py-3 text-right whitespace-nowrap">
+              <button v-if="p.queue_status_today === 'completed'" @click="openHistory(p)" class="text-xs text-gray-500 hover:underline mr-3">View</button>
               <button @click="openEdit(p)" class="text-xs text-gray-500 hover:underline mr-3">Edit</button>
               <button @click="openFiles(p)" class="text-xs text-gray-500 hover:underline mr-3">Files</button>
-              <button @click="openQueue(p)" class="text-xs text-blue-600 hover:underline font-medium">Add to Queue</button>
+              <button v-if="(p.visit_count ?? 0) > 0" @click="printPatient(p)" class="text-xs text-gray-500 hover:underline mr-3">Print</button>
+              <!-- Add to Queue hidden once completed or already queued today -->
+              <button v-if="!p.queue_status_today || p.queue_status_today === 'cancelled'"
+                      @click="openQueue(p)" class="text-xs text-blue-600 hover:underline font-medium">Add to Queue</button>
             </td>
           </tr>
-          <tr v-if="!patients.length"><td colspan="6" class="px-4 py-8 text-center text-gray-400">No patients found.</td></tr>
+          <tr v-if="!patients.length"><td colspan="7" class="px-4 py-8 text-center text-gray-400">No patients found.</td></tr>
         </tbody>
       </table>
     </div>
@@ -86,6 +96,11 @@
     <Modal v-if="showEdit" title="Edit Patient" @close="showEdit = false">
       <PatientForm v-if="editPatient" :patient="editPatient" @updated="onEdited" @cancel="showEdit = false" />
     </Modal>
+
+    <!-- View visit history (completed consultations) — reuses clinic VisitHistory -->
+    <Modal v-if="showHistory" :title="`Visit History — ${active?.name}`" @close="showHistory = false">
+      <VisitHistory v-if="active" :patient-id="active.id" />
+    </Modal>
   </div>
 </template>
 
@@ -98,6 +113,7 @@ import { useAuthStore } from '../../../stores/auth';
 import Modal from '../../../components/HModal.vue';
 import PatientForm from '../../../components/PatientForm.vue';
 import FileGallery from '../../../components/FileGallery.vue';
+import VisitHistory from '../../../components/VisitHistory.vue';
 
 const router = useRouter();
 const toast = useToast();
@@ -111,6 +127,14 @@ const saving = ref(false);
 // Files modal
 const showFiles = ref(false);
 function openFiles(p) { active.value = p; showFiles.value = true; }
+
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'; }
+// Print the patient's complete record/consultation history.
+function printPatient(p) { window.open(`/print/patient/${p.id}`, '_blank'); }
+
+// View history modal (completed consultations)
+const showHistory = ref(false);
+function openHistory(p) { active.value = p; showHistory.value = true; }
 
 // Edit modal — fetch full patient (list is trimmed) then prefill the form
 const showEdit = ref(false);
@@ -159,6 +183,7 @@ async function addToQueue() {
     });
     toast.success(`${active.value.name} added to queue`);
     showQueue.value = false;
+    load(); // refresh so queue_status_today updates (hides Add to Queue)
   } catch (e) {
     toast.error(e.response?.data?.message || 'Failed to add');
   } finally { saving.value = false; }

@@ -18,7 +18,7 @@ $im = \App\Models\Implant::findOrFail($id);
     .row .k { color: #555; }
     .row .v { font-weight: 600; }
     .ref { font-family: 'Courier New', monospace; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-align:center; margin-top:3px; padding-top:3px; border-top:1px solid #111; }
-    .btn { margin: 10px auto; display:block; padding:8px 16px; background:#1e3a8a; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; }
+    .btn { margin: 10px auto; display:block; padding:8px 16px; background:#2E7D32; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; }
     @media print { body { background:#fff; } .no-print { display:none !important; } @page { margin: 4mm; } }
 </style>
 </head>

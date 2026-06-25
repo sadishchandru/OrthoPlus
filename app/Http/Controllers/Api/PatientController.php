@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Patient;
 use App\Models\ClinicalRecord;
+use App\Models\OpdQueue;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -18,6 +19,15 @@ class PatientController extends Controller
         $patients = Patient::query()
             ->select(['id', 'op_number', 'name', 'phone', 'dob', 'gender', 'status', 'created_at'])
             ->withCount('clinicalRecords')
+            // Today's OPD queue status for this patient (drives list actions / badge). One subquery, no N+1.
+            ->addSelect(['queue_status_today' => OpdQueue::select('status')
+                ->whereColumn('patient_id', 'patients.id')
+                ->whereDate('date', now()->toDateString())
+                ->latest('id')->limit(1)])
+            // Last attended visit date (latest clinical record).
+            ->addSelect(['last_visit_date' => ClinicalRecord::select('created_at')
+                ->whereColumn('patient_id', 'patients.id')
+                ->latest('id')->limit(1)])
             ->when($q, fn($query) => $query->where(function ($query) use ($q) {
                 $query->where('name', like_operator(), "%$q%")
                       ->orWhere('phone', like_operator(), "%$q%")
@@ -26,14 +36,20 @@ class PatientController extends Controller
             ->orderByDesc('created_at')
             ->paginate($request->integer('per_page', 15));
 
-        // new vs revisit from prior clinical records.
-        $patients->getCollection()->transform(function ($p) {
-            $p->visit_count = $p->clinical_records_count;
-            $p->visit_type  = $p->clinical_records_count > 0 ? 'revisit' : 'new';
-            return $p;
-        });
+        $patients->getCollection()->transform(fn($p) => $this->withVisitInfo($p));
 
         return response()->json($patients);
+    }
+
+    /** Attach visit_count, visit_type and the suffixed display OP number (N-9 → N-9-1 …). */
+    private function withVisitInfo($p)
+    {
+        $count = $p->clinical_records_count ?? 0;
+        $p->visit_count = $count;
+        $p->visit_type  = $count > 0 ? 'revisit' : 'new';
+        // First visit = base op_number; each prior visit adds a -N suffix.
+        $p->display_op_number = $count > 0 ? $p->op_number . '-' . $count : $p->op_number;
+        return $p;
     }
 
     public function store(Request $request)
@@ -125,6 +141,9 @@ class PatientController extends Controller
 
         $patient->visit_count = $patient->visits->count();
         $patient->visit_type  = $patient->visit_count > 0 ? 'revisit' : 'new';
+        $patient->display_op_number = $patient->visit_count > 0
+            ? $patient->op_number . '-' . $patient->visit_count
+            : $patient->op_number;
 
         return response()->json($patient);
     }
@@ -154,6 +173,8 @@ class PatientController extends Controller
                 'op_number'   => $p->$opCol,
                 'visit_count' => $p->clinical_records_count,
                 'visit_type'  => $p->clinical_records_count > 0 ? 'revisit' : 'new',
+                'display_op_number' => $p->clinical_records_count > 0
+                    ? $p->$opCol . '-' . $p->clinical_records_count : $p->$opCol,
             ]));
 
         return response()->json($patients);

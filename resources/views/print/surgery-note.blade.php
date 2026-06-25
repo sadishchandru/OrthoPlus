@@ -8,9 +8,9 @@ $pat = $s->patient;
 @section('title', $t['surgery_note'] . ' — ' . ($pat->name ?? ''))
 
 @section('content')
-<h2 style="font-size:18px; font-weight:700; color:#1e3a8a; margin-bottom:8px;">{{ $t['surgery_note'] }}</h2>
+<h2 style="font-size:18px; font-weight:700; color:#2E7D32; margin-bottom:8px;">{{ $t['surgery_note'] }}</h2>
 
-<div style="background:#eff6ff; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
+<div style="background:#F1F8F2; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px;">
     <div class="row"><span class="label">{{ $t['patient_name'] }}:</span><span class="value">{{ $pat->name ?? '—' }} ({{ $pat->op_number ?? '—' }})</span></div>
     <div class="row"><span class="label">{{ $t['ip_number'] }}:</span><span class="value">{{ $s->admission->ip_number ?? '—' }}</span></div>
     <div class="row"><span class="label">{{ $t['procedure'] }}:</span><span class="value">{{ $s->surgery_name }} <span style="text-transform:capitalize;">({{ $s->surgery_type }})</span></span></div>

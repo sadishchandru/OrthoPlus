@@ -2,8 +2,8 @@
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-800 to-blue-600 px-4 py-8">
     <div class="bg-white rounded-lg shadow-2xl w-full max-w-md p-8">
       <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-blue-800">OrthoPlus</h1>
-        <p class="text-gray-500 text-sm">Clinic Management - Sign in</p>
+        <Logo variant="full" class="h-12 mx-auto" />
+        <p class="text-gray-500 text-sm mt-2">Clinic Management — Sign in</p>
       </div>
 
       <form @submit.prevent="submit" class="space-y-4">
@@ -45,6 +45,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import Logo from '../components/Logo.vue';
 import { useToast } from 'vue-toastification';
 import { useAuthStore } from '../stores/auth';
 

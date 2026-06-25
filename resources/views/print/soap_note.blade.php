@@ -8,7 +8,7 @@ $pat = $rec->patient;
 @section('title', $t['soap_note'] . ' — ' . $pat->name)
 
 @section('content')
-<h2 style="font-size:16px; font-weight:700; color:#1e3a8a; margin-bottom:8px;">{{ $t['soap_note'] }}</h2>
+<h2 style="font-size:16px; font-weight:700; color:#2E7D32; margin-bottom:8px;">{{ $t['soap_note'] }}</h2>
 
 <div style="display:flex; gap:24px; margin-bottom:10px; font-size:12px;">
     <div><strong>{{ $t['patient_name'] }}:</strong> {{ $pat->name }} ({{ $pat->op_number }})</div>

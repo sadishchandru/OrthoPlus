@@ -9,7 +9,7 @@ $records = \App\Models\ClinicalRecord::where('patient_id', $id)
 @section('title', $t['patient_record'] . ' — ' . $pat->name)
 
 @section('content')
-<h2 style="font-size:16px; font-weight:700; color:#1e3a8a; margin-bottom:12px;">{{ $t['patient_record'] }}</h2>
+<h2 style="font-size:16px; font-weight:700; color:#2E7D32; margin-bottom:12px;">{{ $t['patient_record'] }}</h2>
 
 <div class="section-title">{{ $t['patient_name'] }}</div>
 <div class="row"><span class="label">{{ $t['patient_name'] }}:</span> <span class="value">{{ $pat->name }}</span></div>

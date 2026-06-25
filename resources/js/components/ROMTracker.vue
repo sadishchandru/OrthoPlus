@@ -55,9 +55,9 @@ const JOINTS = ['Cervical', 'Shoulder', 'Elbow', 'Wrist', 'Hip', 'Knee', 'Ankle'
 const props = defineProps({ modelValue: { type: Array, default: () => [] } });
 const emit = defineEmits(['update:modelValue']);
 
-const rows = ref(props.modelValue.length ? [...props.modelValue] : []);
+const rows = ref(Array.isArray(props.modelValue) ? [...props.modelValue] : []);
 
-watch(() => props.modelValue, v => { if (JSON.stringify(v) !== JSON.stringify(rows.value)) rows.value = [...v]; });
+watch(() => props.modelValue, v => { const a = Array.isArray(v) ? v : []; if (JSON.stringify(a) !== JSON.stringify(rows.value)) rows.value = [...a]; });
 
 function addRow() { rows.value.push({ joint: '', movement: '', degrees: null, normal: null }); onChange(); }
 function removeRow(i) { rows.value.splice(i, 1); onChange(); }

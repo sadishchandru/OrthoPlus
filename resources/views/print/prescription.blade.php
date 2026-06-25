@@ -6,13 +6,14 @@ $pat  = $rx->patient;
 $items = $rx->items ?? $rx->medications ?? [];
 $medicineIds = collect($items)->pluck('medicine_id')->filter()->toArray();
 $medMap = \App\Models\Medicine::whereIn('id', $medicineIds)->get()->keyBy('id');
+$rec = $rx->clinical_record_id ? \App\Models\ClinicalRecord::find($rx->clinical_record_id) : null;
 @endphp
 @extends('print.layout')
 @section('title', $t['prescription'] . ' — ' . $pat->name)
 
 @section('head')
 <style>
-    .rx-symbol { font-size: 48px; font-weight: 900; color: #1e3a8a; line-height: 1; float: left; margin-right: 12px; }
+    .rx-symbol { font-size: 48px; font-weight: 900; color: #2E7D32; line-height: 1; float: left; margin-right: 12px; }
 </style>
 @endsection
 
@@ -20,13 +21,19 @@ $medMap = \App\Models\Medicine::whereIn('id', $medicineIds)->get()->keyBy('id');
 <div style="display:flex; align-items:flex-start; margin-bottom:14px;">
     <div class="rx-symbol">℞</div>
     <div>
-        <div style="font-size:14px; font-weight:700; color:#1e3a8a;">{{ $t['prescription'] }}</div>
+        <div style="font-size:14px; font-weight:700; color:#2E7D32;">{{ $t['prescription'] }}</div>
         <div style="font-size:12px; color:#555; margin-top:2px;">
             <strong>{{ $t['patient_name'] }}:</strong> {{ $pat->name }} ({{ $pat->op_number }})
             &nbsp;&nbsp; <strong>{{ $t['date'] }}:</strong> {{ \Carbon\Carbon::parse($rx->created_at)->format('d M Y') }}
         </div>
     </div>
 </div>
+
+@if($rec && $rec->pain_description)
+<div style="background:#F1F8F2; border-radius:6px; padding:8px 10px; margin-bottom:12px; font-size:12px;">
+    <strong style="color:#2E7D32;">Pain:</strong> {{ $rec->pain_description }}
+</div>
+@endif
 
 <table style="margin-top:8px;">
     <thead>

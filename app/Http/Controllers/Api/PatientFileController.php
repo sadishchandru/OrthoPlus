@@ -25,11 +25,25 @@ class PatientFileController extends Controller
     /** Multi-file upload. Existing files are preserved (append-only). */
     public function store(Request $request, Patient $patient)
     {
+        // Validate by extension (mimes: sniffs docx/xlsx as zip and wrongly rejects them).
         $request->validate([
             'files'   => 'required|array|min:1',
-            'files.*' => 'file|max:10240|mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx', // 10 MB each
+            'files.*' => 'file|max:25600', // 25 MB each
             'module'  => 'nullable|string|max:50',
         ]);
+
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'heic', 'bmp', 'pdf',
+                    'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf'];
+
+        foreach ($request->file('files') as $file) {
+            $ext = strtolower($file->getClientOriginalExtension());
+            if (!in_array($ext, $allowed, true)) {
+                return response()->json([
+                    'message' => "Unsupported file type: .{$ext}",
+                    'errors'  => ['files' => ["Unsupported file type: .{$ext}. Allowed: " . implode(', ', $allowed)]],
+                ], 422);
+            }
+        }
 
         $saved = [];
         foreach ($request->file('files') as $file) {

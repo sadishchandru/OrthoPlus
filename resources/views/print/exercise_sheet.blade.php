@@ -10,7 +10,7 @@ $exerciseMap = \App\Models\Exercise::whereIn('id', $exerciseIds)->get()->keyBy('
 @section('title', $t['exercise_sheet'] . ' — ' . $pat->name)
 
 @section('content')
-<h2 style="font-size:16px; font-weight:700; color:#1e3a8a; margin-bottom:8px;">{{ $t['exercise_sheet'] }}</h2>
+<h2 style="font-size:16px; font-weight:700; color:#2E7D32; margin-bottom:8px;">{{ $t['exercise_sheet'] }}</h2>
 
 <div style="display:flex; gap:24px; margin-bottom:12px; font-size:12px;">
     <div><strong>{{ $t['patient_name'] }}:</strong> {{ $pat->name }} ({{ $pat->op_number }})</div>
@@ -28,10 +28,10 @@ $exerciseMap = \App\Models\Exercise::whereIn('id', $exerciseIds)->get()->keyBy('
         @if($exercise->image_url)
         <img src="{{ $exercise->image_url }}" style="width:80px; height:80px; object-fit:cover; border-radius:6px; flex-shrink:0;" />
         @else
-        <div style="width:80px; height:80px; background:#eff6ff; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:28px;">🏋️</div>
+        <div style="width:80px; height:80px; background:#F1F8F2; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:28px;">🏋️</div>
         @endif
         <div style="flex:1;">
-            <div style="font-weight:700; font-size:14px; color:#1e3a8a; margin-bottom:4px;">{{ $i+1 }}. {{ $exercise->name }}</div>
+            <div style="font-weight:700; font-size:14px; color:#2E7D32; margin-bottom:4px;">{{ $i+1 }}. {{ $exercise->name }}</div>
             <div style="display:flex; gap:16px; font-size:12px; margin-bottom:6px;">
                 @if(!empty($ex['sets']))<span><strong>{{ $t['sets'] }}:</strong> {{ $ex['sets'] }}</span>@endif
                 @if(!empty($ex['reps']))<span><strong>{{ $t['reps'] }}:</strong> {{ $ex['reps'] }}</span>@endif
