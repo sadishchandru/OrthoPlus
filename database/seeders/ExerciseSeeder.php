@@ -24,12 +24,13 @@ class ExerciseSeeder extends Seeder
             ['name' => 'Wrist Flexion/Extension', 'category' => 'Wrist', 'instructions' => 'Bend wrist up and down, 10 reps each direction with light resistance.', 'tags' => json_encode(['wrist', 'forearm', 'ROM'])],
         ];
 
+        // Match on name → idempotent on every driver. insertOrIgnore only dedupes
+        // when a UNIQUE index exists (exercises.name has none) → it dup'd each deploy.
         foreach ($exercises as $e) {
-            DB::table('exercises')->insertOrIgnore(array_merge($e, [
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            DB::table('exercises')->updateOrInsert(
+                ['name' => $e['name']],
+                array_merge($e, ['is_active' => true, 'updated_at' => now(), 'created_at' => now()])
+            );
         }
     }
 }

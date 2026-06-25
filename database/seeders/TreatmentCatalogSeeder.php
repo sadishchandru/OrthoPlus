@@ -27,12 +27,13 @@ class TreatmentCatalogSeeder extends Seeder
             ['name' => 'Gait Training', 'category' => 'Exercise', 'duration_min' => 45, 'price' => 500],
         ];
 
+        // Match on name → idempotent on every driver. insertOrIgnore only dedupes
+        // with a UNIQUE index (treatment_catalog.name has none) → it dup'd each deploy.
         foreach ($treatments as $t) {
-            DB::table('treatment_catalog')->insertOrIgnore(array_merge($t, [
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]));
+            DB::table('treatment_catalog')->updateOrInsert(
+                ['name' => $t['name']],
+                array_merge($t, ['is_active' => true, 'updated_at' => now(), 'created_at' => now()])
+            );
         }
     }
 }
