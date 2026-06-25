@@ -109,6 +109,8 @@ class OpdController extends Controller
             'rom'              => 'nullable|array',
             'ortho_tests'      => 'nullable|array',
             'outcome_measures' => 'nullable|array',
+            'follow_up_date'   => 'nullable|date',
+            'refer_to'         => 'nullable|string',
         ]);
 
         $opd_queue->update([
@@ -127,6 +129,8 @@ class OpdController extends Controller
             'rom'              => $data['rom'] ?? [],
             'ortho_tests'      => $data['ortho_tests'] ?? [],
             'outcome_measures' => $data['outcome_measures'] ?? [],
+            'follow_up_date'   => $data['follow_up_date'] ?? null,
+            'refer_to'         => $data['refer_to'] ?? null,
         ];
 
         // Edit re-uses the linked record → NO duplicate consultation on re-save.

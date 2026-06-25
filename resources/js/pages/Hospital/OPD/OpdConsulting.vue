@@ -45,10 +45,10 @@
           <button @click.stop="callNext(token)" class="flex-1 text-xs bg-blue-50 text-blue-700 py-1 rounded-lg">Call</button>
           <button @click.stop="markDone(token)" class="flex-1 text-xs bg-green-50 text-green-700 py-1 rounded-lg">Done</button>
         </div>
-        <!-- Completed: Edit + Print only (no Complete) -->
-        <div class="flex gap-1 mt-2" v-else>
-          <button @click.stop="selectToken(token)" class="flex-1 text-xs bg-blue-50 text-blue-700 py-1 rounded-lg">Edit</button>
-          <button @click.stop="printConsult(token)" class="flex-1 text-xs bg-gray-100 text-gray-700 py-1 rounded-lg">Print</button>
+        <!-- Completed: Edit + Print only (no Complete), role-gated -->
+        <div class="flex gap-1 mt-2" v-else-if="canEditConsult || canPrintConsult">
+          <button v-if="canEditConsult" @click.stop="selectToken(token)" class="flex-1 text-xs bg-blue-50 text-blue-700 py-1 rounded-lg">Edit</button>
+          <button v-if="canPrintConsult" @click.stop="printConsult(token)" class="flex-1 text-xs bg-gray-100 text-gray-700 py-1 rounded-lg">Print</button>
         </div>
       </div>
       <div v-if="!queue.length" class="text-center text-gray-400 py-8 text-sm">No patients in queue today</div>
@@ -160,7 +160,8 @@
 
         <div class="mb-4">
           <h3 class="text-sm font-semibold text-gray-700 mb-2">Quick Prescription</h3>
-          <PrescriptionForm :patient-id="selectedToken.patient?.id" @saved="onRxSaved"/>
+          <PrescriptionForm :key="'rx-' + selectedToken.id" :patient-id="selectedToken.patient?.id"
+                            :prescription-id="editRxId" @saved="onRxSaved"/>
         </div>
 
         <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -226,9 +227,13 @@ const auth = useAuthStore();
 // Permission-based file actions (reuse existing page_access / roles).
 const canUploadFiles = computed(() => auth.canAccess('patients') || auth.canAccess('opd'));
 const canDeleteFiles = computed(() => auth.isRoot || auth.hasRole('doctor'));
+// Edit completed consult = clinical roles only; Print = anyone with OPD view.
+const canEditConsult = computed(() => auth.isRoot || auth.hasRole('doctor'));
+const canPrintConsult = computed(() => auth.canAccess('opd') || auth.hasRole('doctor', 'nurse', 'receptionist'));
 const queue = ref([]);
 const stats = ref({ waiting: 0, in_progress: 0, completed: 0 });
 const selectedToken = ref(null);
+const editRxId = ref(null); // existing prescription id when editing a completed consult
 const showAddToken = ref(false);
 const saving = ref(false);
 const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -260,15 +265,17 @@ async function loadQueue() {
 
 async function selectToken(token) {
   selectedToken.value = token;
+  editRxId.value = null;
   form.value = {
     ...blankForm(),
     vitals: token.vitals || blankForm().vitals,
     chief_complaint: token.chief_complaint || '',
   };
   if (token.status === 'completed') {
-    // Edit mode → load the saved consultation into the form (one call).
+    // Edit mode → load the saved consultation + prescription into the form (one call).
     try {
       const { data } = await axios.get(`/api/hospital/opd/queue/${token.id}/consult`);
+      editRxId.value = data.prescription?.id || null;
       const r = data.clinical_record;
       if (r) {
         const arr = (v) => (Array.isArray(v) ? v : []); // saved JSON may be object/null
@@ -280,6 +287,8 @@ async function selectToken(token) {
           soap_notes: (r.soap_notes && !Array.isArray(r.soap_notes)) ? r.soap_notes : form.value.soap_notes,
           rom: arr(r.rom),
           ortho_tests: arr(r.ortho_tests),
+          follow_up_date: r.follow_up_date || '',
+          refer_to: r.refer_to || '',
         };
       }
     } catch { /* ignore */ }

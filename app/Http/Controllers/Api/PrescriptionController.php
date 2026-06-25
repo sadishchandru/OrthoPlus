@@ -66,6 +66,49 @@ class PrescriptionController extends Controller
         return response()->json($prescription, 201);
     }
 
+    /** Load one prescription for editing. */
+    public function show(Prescription $prescription)
+    {
+        return response()->json($prescription->load('patient:id,name,op_number'));
+    }
+
+    /** Edit an existing prescription (no new row). */
+    public function update(Request $request, Prescription $prescription)
+    {
+        $data = $request->validate([
+            'items'                => 'required|array|min:1',
+            'items.*.medicine_id'  => 'required|exists:medicines,id',
+            'items.*.medicine_name'=> 'nullable|string',
+            'items.*.dose'         => 'required|string',
+            'items.*.frequency'    => 'required|string',
+            'items.*.duration'     => 'nullable|string',
+            'items.*.qty'          => 'nullable|numeric|min:0',
+            'items.*.unit_price'   => 'nullable|numeric|min:0',
+            'services'             => 'nullable|array',
+            'services.*.service_name' => 'required_with:services|string',
+            'services.*.qty'       => 'nullable|numeric|min:0',
+            'services.*.unit_price'=> 'nullable|numeric|min:0',
+            'notes'                => 'nullable|string',
+        ]);
+
+        $withAmount = fn($row) => array_merge($row, [
+            'qty' => $row['qty'] ?? 1, 'unit_price' => $row['unit_price'] ?? 0,
+            'amount' => ($row['qty'] ?? 1) * ($row['unit_price'] ?? 0),
+        ]);
+        $items    = collect($data['items'])->map($withAmount)->all();
+        $services = collect($data['services'] ?? [])->map($withAmount)->all();
+
+        $prescription->update([
+            'items'           => $items,
+            'medications'     => $items,
+            'services'        => $services,
+            'estimated_total' => collect($items)->sum('amount') + collect($services)->sum('amount'),
+            'notes'           => $data['notes'] ?? null,
+        ]);
+
+        return response()->json($prescription);
+    }
+
     /** Prescriptions for a patient (Rx history). */
     public function index(Request $request)
     {

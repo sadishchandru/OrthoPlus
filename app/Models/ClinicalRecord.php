@@ -12,6 +12,7 @@ class ClinicalRecord extends Model
     protected $fillable = [
         'patient_id', 'visit_no', 'soap_notes', 'body_map', 'pain_description',
         'vas_score', 'rom', 'ortho_tests', 'outcome_measures',
+        'follow_up_date', 'refer_to',
         'gait_video', 'created_by', 'updated_by',
     ];
 
@@ -22,6 +23,7 @@ class ClinicalRecord extends Model
         'ortho_tests' => 'array',
         'outcome_measures' => 'array',
         'vas_score' => 'float',
+        'follow_up_date' => 'date:Y-m-d',
     ];
 
     public function patient() { return $this->belongsTo(Patient::class); }

@@ -86,6 +86,8 @@ Route::prefix('prescriptions')->group(function () {
     Route::get('/', [PrescriptionController::class, 'index']);
     Route::post('/', [PrescriptionController::class, 'store']);
     Route::get('/{prescription}/print', [PrescriptionController::class, 'print']);
+    Route::get('/{prescription}', [PrescriptionController::class, 'show']);
+    Route::put('/{prescription}', [PrescriptionController::class, 'update']);
 });
 
 Route::get('/medicines/search', [MedicineController::class, 'search']);

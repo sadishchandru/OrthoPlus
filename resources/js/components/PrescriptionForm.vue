@@ -95,13 +95,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
 
 const props = defineProps({
   patientId: { type: Number, required: true },
   clinicalRecordId: { type: Number, default: null },
+  prescriptionId: { type: Number, default: null }, // present = edit existing
 });
 const emit = defineEmits(['saved']);
 const toast = useToast();
@@ -112,6 +113,20 @@ const notes = ref('');
 const loading = ref(false);
 const error = ref('');
 const savedId = ref(null);
+
+// Load an existing prescription into the form (edit mode).
+async function loadExisting(id) {
+  if (!id) return;
+  try {
+    const { data } = await axios.get(`/api/prescriptions/${id}`);
+    items.value = (data.items || data.medications || []).map((it) => ({ ...it, search: it.medicine_name || '', suggestions: [] }));
+    services.value = data.services || [];
+    notes.value = data.notes || '';
+    savedId.value = data.id;
+  } catch { /* ignore */ }
+}
+onMounted(() => loadExisting(props.prescriptionId));
+watch(() => props.prescriptionId, (id) => loadExisting(id));
 
 const estimatedTotal = computed(() =>
   items.value.reduce((s, it) => s + (it.qty * it.unit_price || 0), 0) +
@@ -150,20 +165,26 @@ async function submit() {
   loading.value = true;
   error.value = '';
   try {
-    const { data } = await axios.post('/api/prescriptions', {
+    const payload = {
       patient_id: props.patientId,
       clinical_record_id: props.clinicalRecordId,
       items: items.value.map(({ medicine_id, medicine_name, dose, frequency, duration, qty, unit_price }) =>
         ({ medicine_id, medicine_name, dose, frequency, duration, qty, unit_price })),
       services: services.value.filter(s => s.service_name),
       notes: notes.value,
-    });
+    };
+    const editingId = props.prescriptionId || savedId.value;
+    let data;
+    if (editingId) {
+      ({ data } = await axios.put(`/api/prescriptions/${editingId}`, payload)); // edit, no duplicate
+      toast.success('Prescription updated.');
+    } else {
+      ({ data } = await axios.post('/api/prescriptions', payload));
+      toast.success('Prescription saved.');
+    }
     savedId.value = data.id;
-    toast.success('Prescription saved.');
     emit('saved', data);
-    items.value = [];
-    services.value = [];
-    notes.value = '';
+    if (!editingId) { items.value = []; services.value = []; notes.value = ''; } // keep items visible when editing
   } catch (e) {
     error.value = e.response?.data?.message || 'Failed to save.';
   } finally {
