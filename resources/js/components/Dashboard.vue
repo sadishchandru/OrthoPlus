@@ -1,84 +1,90 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold text-gray-900">Dashboard</h1>
-      <span class="text-sm text-gray-500">{{ today }}</span>
+      <h1 class="text-xl font-bold text-foreground">Dashboard</h1>
+      <span class="text-sm text-muted-foreground">{{ today }}</span>
     </div>
 
     <!-- KPI Cards (skeleton while loading) -->
     <div v-if="loading" class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-      <div v-for="i in 4" :key="i" class="bg-white rounded-xl p-4 border border-gray-200 animate-pulse space-y-2">
-        <div class="h-6 w-6 bg-gray-200 rounded"></div>
-        <div class="h-6 w-16 bg-gray-200 rounded"></div>
-        <div class="h-3 w-20 bg-gray-100 rounded"></div>
-      </div>
+      <Card v-for="i in 4" :key="i" class="p-4 space-y-2">
+        <Skeleton class="h-6 w-6" />
+        <Skeleton class="h-6 w-16" />
+        <Skeleton class="h-3 w-20" />
+      </Card>
     </div>
     <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-      <div v-for="card in kpiCards" :key="card.label" class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
+      <Card v-for="card in kpiCards" :key="card.label" class="p-4">
         <div class="text-2xl mb-1">{{ card.icon }}</div>
-        <div class="text-2xl font-bold text-gray-900">{{ card.value }}</div>
-        <div class="text-xs text-gray-500 mt-1">{{ card.label }}</div>
-      </div>
+        <div class="text-2xl font-bold text-foreground">{{ card.value }}</div>
+        <div class="text-xs text-muted-foreground mt-1">{{ card.label }}</div>
+      </Card>
     </div>
 
     <!-- Quick Actions -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      <router-link to="/patients" class="flex items-center gap-2 p-3 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium">➕ New Patient</router-link>
-      <router-link to="/appointments" class="flex items-center gap-2 p-3 rounded-xl bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium">📅 Appointments</router-link>
-      <router-link to="/doctor-direct" class="flex items-center gap-2 p-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium">👨‍⚕️ Direct Doctor</router-link>
-      <router-link to="/pharmacy" class="flex items-center gap-2 p-3 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 text-sm font-medium">💊 Pharmacy</router-link>
+      <router-link v-for="a in quickActions" :key="a.to" :to="a.to"
+        class="flex items-center gap-2 p-3 rounded-xl bg-accent text-accent-foreground hover:bg-accent/80 text-sm font-medium transition-colors">
+        {{ a.label }}
+      </router-link>
     </div>
 
     <!-- Today's appointments -->
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
-      <div class="px-5 py-4 border-b border-gray-100">
-        <h2 class="font-semibold text-gray-800">Today's Appointments</h2>
-      </div>
-      <div class="divide-y divide-gray-100">
-        <div v-if="!stats.today_appointments?.length" class="px-5 py-6 text-center text-gray-400 text-sm">No appointments today</div>
+    <Card>
+      <CardHeader class="py-4">
+        <CardTitle class="text-base">Today's Appointments</CardTitle>
+      </CardHeader>
+      <div class="divide-y divide-border border-t border-border">
+        <div v-if="!stats.today_appointments?.length" class="px-5 py-6 text-center text-muted-foreground text-sm">No appointments today</div>
         <div
           v-for="apt in stats.today_appointments"
           :key="apt.id"
-          class="px-5 py-3 flex items-center justify-between hover:bg-gray-50"
+          class="px-5 py-3 flex items-center justify-between hover:bg-muted/50"
         >
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm">
+            <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-semibold text-sm">
               {{ apt.patient?.name?.charAt(0) }}
             </div>
             <div>
-              <div class="font-medium text-sm text-gray-800">{{ apt.patient?.name }}</div>
-              <div class="text-xs text-gray-400">{{ apt.patient?.op_number }} · {{ apt.scheduled_time }}</div>
+              <div class="font-medium text-sm text-foreground">{{ apt.patient?.name }}</div>
+              <div class="text-xs text-muted-foreground">{{ apt.patient?.op_number }} · {{ apt.scheduled_time }}</div>
             </div>
           </div>
-          <span :class="statusClass(apt.status)" class="text-xs px-2 py-0.5 rounded-full font-medium">{{ apt.status }}</span>
+          <Badge :variant="statusVariant(apt.status)" class="capitalize">{{ apt.status }}</Badge>
         </div>
       </div>
-    </div>
+    </Card>
 
     <!-- Low stock alert -->
-    <div v-if="stats.low_stock_medicines?.length" class="bg-red-50 border border-red-200 rounded-xl p-4">
-      <h3 class="font-semibold text-red-800 mb-2">Low Stock Alert</h3>
+    <Card v-if="stats.low_stock_medicines?.length" class="border-destructive/30 bg-destructive/5 p-4">
+      <h3 class="font-semibold text-destructive mb-2">Low Stock Alert</h3>
       <div class="flex flex-wrap gap-2">
-        <span
-          v-for="med in stats.low_stock_medicines"
-          :key="med.id"
-          class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full"
-        >
+        <Badge v-for="med in stats.low_stock_medicines" :key="med.id" variant="destructive">
           {{ med.name }} — {{ med.quantity_in_stock }} left
-        </span>
+        </Badge>
       </div>
-    </div>
+    </Card>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const stats = ref({});
 const loading = ref(true);
 
 const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+const quickActions = [
+  { to: '/patients', label: '➕ New Patient' },
+  { to: '/appointments', label: '📅 Appointments' },
+  { to: '/doctor-direct', label: '👨‍⚕️ Direct Doctor' },
+  { to: '/pharmacy', label: '💊 Pharmacy' },
+];
 
 onMounted(async () => {
   try {
@@ -96,12 +102,12 @@ const kpiCards = computed(() => [
   { icon: '🏥', label: 'Total Patients', value: stats.value.total_patients ?? '—' },
 ]);
 
-function statusClass(status) {
+function statusVariant(status) {
   return {
-    scheduled: 'bg-blue-100 text-blue-700',
-    completed: 'bg-green-100 text-green-700',
-    cancelled: 'bg-gray-100 text-gray-500',
-    no_show: 'bg-red-100 text-red-600',
-  }[status] || 'bg-gray-100 text-gray-500';
+    scheduled: 'default',
+    completed: 'success',
+    cancelled: 'secondary',
+    no_show: 'destructive',
+  }[status] || 'secondary';
 }
 </script>

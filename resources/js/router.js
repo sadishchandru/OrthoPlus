@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from './stores/auth';
+import { setNavigating } from '@/composables/useLoading';
 
 const routes = [
     { path: '/',              component: () => import('./pages/PortalSelect.vue'),    meta: { public: true, guest: true } },
@@ -64,6 +65,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
+    setNavigating(true); // show global loader while the page chunk + guard resolve
     const auth = useAuthStore();
 
     if (to.meta.public) return true;
@@ -88,5 +90,8 @@ router.beforeEach((to) => {
 
     return true;
 });
+
+router.afterEach(() => setNavigating(false));
+router.onError(() => setNavigating(false));
 
 export default router;

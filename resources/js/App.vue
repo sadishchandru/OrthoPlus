@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <GlobalLoader />
     <header v-if="showNav" class="bg-white shadow-sm sticky top-0 z-40 print:hidden">
       <div class="flex items-center gap-2 min-h-[3.5rem] px-3 md:px-4 max-w-7xl mx-auto">
         <div class="flex items-center gap-2 flex-shrink-0">
@@ -34,6 +35,10 @@
             <span class="lg:hidden">DD</span>
           </router-link>
           <span v-if="auth.role" class="hidden lg:inline text-xs bg-gray-100 px-2 py-1 rounded-full uppercase flex-shrink-0">{{ auth.role }}</span>
+          <button @click="toggle" :title="mode === 'dark' ? 'Light mode' : 'Dark mode'" aria-label="Toggle theme"
+                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 flex-shrink-0">
+            <component :is="mode === 'dark' ? Sun : Moon" class="w-5 h-5" />
+          </button>
           <button @click="logout" :title="`${auth.user?.name || 'User'} - logout`"
                   class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center hover:bg-blue-200">
             {{ userInitials }}
@@ -98,6 +103,11 @@ import { computed, ref, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from './stores/auth';
 import Logo from './components/Logo.vue';
+import GlobalLoader from '@/components/GlobalLoader.vue';
+import { useTheme } from '@/composables/useTheme';
+import { Sun, Moon } from 'lucide-vue-next';
+
+const { mode, toggle } = useTheme();
 
 const route = useRoute();
 const router = useRouter();

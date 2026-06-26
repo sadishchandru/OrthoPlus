@@ -1,80 +1,89 @@
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-bold text-gray-900">Patients</h1>
-      <button @click="showNew = true" class="btn-primary">+ New Patient</button>
+      <h1 class="text-xl font-bold text-foreground">Patients</h1>
+      <Button @click="showNew = true">+ New Patient</Button>
     </div>
 
     <!-- Search -->
-    <div class="bg-white rounded-xl border border-gray-200 p-4">
+    <Card class="p-4">
       <PatientSearch @select="goToPatient" placeholder="Search patients by name, phone, or OP No..." />
-    </div>
+    </Card>
 
     <!-- Duplicate warning -->
-    <div v-if="dupeWarning" class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-      <p class="text-sm font-semibold text-yellow-800 mb-2">⚠️ Possible duplicate detected</p>
-      <p class="text-xs text-yellow-700 mb-2">{{ dupeWarning.message }}</p>
-      <div class="flex gap-2">
-        <button v-for="p in dupeWarning.patients" :key="p.id" @click="goToPatient(p)" class="text-xs bg-yellow-200 hover:bg-yellow-300 text-yellow-900 px-3 py-1 rounded">
+    <Card v-if="dupeWarning" class="border-amber-300 bg-amber-50 dark:bg-amber-950/30 p-4">
+      <p class="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-2">⚠️ Possible duplicate detected</p>
+      <p class="text-xs text-amber-700 dark:text-amber-400 mb-2">{{ dupeWarning.message }}</p>
+      <div class="flex flex-wrap gap-2">
+        <Button v-for="p in dupeWarning.patients" :key="p.id" variant="outline" size="sm" @click="goToPatient(p)">
           Open: {{ p.name }} ({{ p.op_number }})
-        </button>
-        <button @click="dupeWarning = null" class="text-xs text-gray-500 ml-2">Dismiss</button>
+        </Button>
+        <Button variant="ghost" size="sm" @click="dupeWarning = null">Dismiss</Button>
       </div>
-    </div>
+    </Card>
 
     <!-- Recent patients list -->
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div class="px-5 py-4 border-b border-gray-100 flex justify-between items-center">
-        <span class="font-semibold text-gray-800">Recent Patients</span>
-        <span class="text-xs text-gray-400">{{ total }} total</span>
+    <Card class="overflow-hidden">
+      <CardHeader class="py-4 flex-row items-center justify-between">
+        <CardTitle class="text-base">Recent Patients</CardTitle>
+        <span class="text-xs text-muted-foreground">{{ total }} total</span>
+      </CardHeader>
+
+      <!-- loading skeleton -->
+      <div v-if="loading" class="divide-y divide-border border-t border-border">
+        <div v-for="i in 6" :key="i" class="flex items-center gap-3 px-5 py-3">
+          <Skeleton class="w-9 h-9 rounded-full" />
+          <div class="space-y-1.5 flex-1"><Skeleton class="h-3.5 w-32" /><Skeleton class="h-3 w-24" /></div>
+          <Skeleton class="h-5 w-14 rounded" />
+        </div>
       </div>
-      <div class="divide-y divide-gray-100">
+
+      <div v-else class="divide-y divide-border border-t border-border">
         <router-link
           v-for="p in patients"
           :key="p.id"
           :to="`/patients/${p.id}`"
-          class="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+          class="flex items-center justify-between px-5 py-3 hover:bg-muted/50 transition-colors"
         >
           <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
+            <div class="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-bold text-sm">
               {{ p.name?.charAt(0) }}
             </div>
             <div>
-              <div class="font-medium text-sm text-gray-900">{{ p.name }}</div>
-              <div class="text-xs text-gray-400">{{ p.phone }} · {{ p.gender }}</div>
+              <div class="font-medium text-sm text-foreground">{{ p.name }}</div>
+              <div class="text-xs text-muted-foreground">{{ p.phone }} · {{ p.gender }}</div>
             </div>
           </div>
           <div class="text-right flex items-center gap-2">
-            <span v-if="p.visit_type"
-              :class="p.visit_type === 'new' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'"
-              class="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase">
+            <Badge v-if="p.visit_type" :variant="p.visit_type === 'new' ? 'success' : 'secondary'" class="uppercase text-[10px]">
               {{ p.visit_type === 'new' ? 'New' : 'Revisit' }}
-            </span>
-            <div class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{{ p.op_number }}</div>
+            </Badge>
+            <Badge variant="secondary">{{ p.op_number }}</Badge>
           </div>
         </router-link>
+        <div v-if="!patients.length" class="px-5 py-6 text-center text-muted-foreground text-sm">No patients found.</div>
       </div>
-      <div class="px-5 py-3 border-t border-gray-100 flex justify-center gap-3">
-        <button @click="page--; load()" :disabled="page <= 1" class="btn-secondary px-3 py-1 text-xs">← Prev</button>
-        <span class="text-xs text-gray-500 self-center">Page {{ page }}</span>
-        <button @click="page++; load()" :disabled="patients.length < 20" class="btn-secondary px-3 py-1 text-xs">Next →</button>
-      </div>
-    </div>
 
-    <!-- New patient modal -->
-    <div v-if="showNew" class="fixed inset-0 bg-black/50 z-50 flex items-stretch md:items-center justify-center p-0 md:p-4">
-      <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-2xl shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-semibold text-gray-900">Register New Patient</h3>
-          <button @click="showNew = false" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500 text-xl flex-shrink-0">✕</button>
-        </div>
+      <div class="px-5 py-3 border-t border-border flex justify-center items-center gap-3">
+        <Button variant="outline" size="sm" :disabled="page <= 1" @click="page--; load()">← Prev</Button>
+        <span class="text-xs text-muted-foreground">Page {{ page }}</span>
+        <Button variant="outline" size="sm" :disabled="patients.length < 20" @click="page++; load()">Next →</Button>
+      </div>
+    </Card>
+
+    <!-- New patient dialog -->
+    <Dialog v-model:open="showNew">
+      <DialogContent class="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Register New Patient</DialogTitle>
+        </DialogHeader>
         <PatientForm
           @created="onCreated"
           @cancel="showNew = false"
           @duplicate-warning="dupeWarning = $event"
         />
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -84,20 +93,31 @@ import { useRouter } from 'vue-router';
 import axios from 'axios';
 import PatientSearch from '../components/PatientSearch.vue';
 import PatientForm from '../components/PatientForm.vue';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const router = useRouter();
 const patients = ref([]);
 const total = ref(0);
 const page = ref(1);
+const loading = ref(true);
 const showNew = ref(false);
 const dupeWarning = ref(null);
 
 onMounted(load);
 
 async function load() {
-  const { data } = await axios.get('/api/patients', { params: { page: page.value } });
-  patients.value = data.data || data;
-  total.value = data.total || patients.value.length;
+  loading.value = true;
+  try {
+    const { data } = await axios.get('/api/patients', { params: { page: page.value } });
+    patients.value = data.data || data;
+    total.value = data.total || patients.value.length;
+  } finally {
+    loading.value = false;
+  }
 }
 
 function goToPatient(p) { router.push(`/patients/${p.id}`); }
@@ -107,9 +127,3 @@ function onCreated(patient) {
   router.push(`/patients/${patient.id}`);
 }
 </script>
-
-<style scoped>
-@reference "tailwindcss";
-.btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
-.btn-secondary { @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40; }
-</style>

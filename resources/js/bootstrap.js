@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { startLoading, stopLoading } from '@/composables/useLoading';
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -15,8 +16,15 @@ if (saved) window.axios.defaults.headers.common['Authorization'] = `Bearer ${sav
 window.axios.interceptors.request.use((config) => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) config.headers['Authorization'] = `Bearer ${token}`;
+    if (!config.__noLoader) startLoading();   // pass {__noLoader:true} to opt out
     return config;
 });
+
+// Stop the loader on every settled response (success or error).
+window.axios.interceptors.response.use(
+    (r) => { if (!r.config?.__noLoader) stopLoading(); return r; },
+    (e) => { if (!e.config?.__noLoader) stopLoading(); return Promise.reject(e); },
+);
 
 // On 401, drop token and bounce to login (avoid loop on the login call itself)
 window.axios.interceptors.response.use(

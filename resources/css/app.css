@@ -1,4 +1,8 @@
 @import 'tailwindcss';
+@import 'tw-animate-css';
+
+/* shadcn-vue dark mode: toggled by a `.dark` class on <html> */
+@custom-variant dark (&:is(.dark *));
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -78,4 +82,81 @@
     header, nav, aside, .print\:hidden, .no-print { display: none !important; }
     body { font-size: 12pt; }
     .print-full { width: 100% !important; }
+}
+
+/* ============================================================================
+   shadcn-vue design tokens. Primary = OrthoPlus brand green. Light + dark.
+   DB-driven branding still overrides --color-brand / blue-ramp above; these
+   semantic tokens drive the new shadcn components only (additive, no rework).
+   ============================================================================ */
+:root {
+    --radius: 0.625rem;
+    --background: #ffffff;
+    --foreground: #1f2937;
+    --card: #ffffff;
+    --card-foreground: #1f2937;
+    --popover: #ffffff;
+    --popover-foreground: #1f2937;
+    --primary: #2e7d32;            /* brand green */
+    --primary-foreground: #ffffff;
+    --secondary: #f1f5f4;
+    --secondary-foreground: #1f2937;
+    --muted: #f1f5f4;
+    --muted-foreground: #64748b;
+    --accent: #e8f5e9;
+    --accent-foreground: #1b5e20;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #e2e8f0;
+    --input: #e2e8f0;
+    --ring: #2e7d32;
+}
+
+.dark {
+    --background: #0b0f0b;
+    --foreground: #e5e7eb;
+    --card: #131a13;
+    --card-foreground: #e5e7eb;
+    --popover: #131a13;
+    --popover-foreground: #e5e7eb;
+    --primary: #4caf50;            /* lighter green for contrast on dark */
+    --primary-foreground: #0b0f0b;
+    --secondary: #1c241c;
+    --secondary-foreground: #e5e7eb;
+    --muted: #1c241c;
+    --muted-foreground: #9ca3af;
+    --accent: #1f2e1f;
+    --accent-foreground: #c8e6c9;
+    --destructive: #ef4444;
+    --destructive-foreground: #0b0f0b;
+    --border: #26302699;
+    --input: #2a352a;
+    --ring: #4caf50;
+}
+
+/* Expose tokens as Tailwind utilities (bg-background, text-foreground, border-input…) */
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
 }
