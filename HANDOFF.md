@@ -243,3 +243,38 @@ docker exec mysql_server mysql -uroot -pshowme orthoplus -e "SHOW TABLES;"
 npm run build
 # app: http://localhost:8001   (clinic root/root123 · hospital hadmin/hadmin123)
 ```
+
+---
+
+## 9. shadcn-vue UI migration (in progress)
+
+Incremental migration of the UI to **shadcn-vue** on Tailwind v4. **No business logic / API changes** — template + classes only.
+
+### Foundation (done)
+- Deps: `reka-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-vue-next`, `@vueuse/core`, `tw-animate-css`.
+- `@` alias → `resources/js` (`vite.config.js` + `jsconfig.json`). `components.json`. `resources/js/lib/utils.js` = `cn()`.
+- **Theme tokens** in `app.css`: `@custom-variant dark`, `:root` + `.dark` token sets (`--primary` = brand green `#2E7D32` light / `#4CAF50` dark), `@theme inline` exposes `bg-primary`/`text-foreground`/`border-input`/`rounded-lg` etc. Additive — existing `--color-brand` + blue→green remap + DB branding untouched.
+- **Primitives** in `resources/js/components/ui/<name>/` (barrel `index.js` each): `button` (cva), `input`, `label`, `badge` (cva), `card` (+Header/Title/Description/Content/Footer), `skeleton`, `spinner`, `switch`, `separator`, `dialog` (reka-ui), `table`.
+
+### Global (done)
+- **Loader on every page:** `composables/useLoading.js` (`isBusy` = axios pending count OR router navigating) → `bootstrap.js` interceptors `start/stopLoading` (opt-out `{__noLoader:true}`) + `router.js` `beforeEach/afterEach/onError` → `components/GlobalLoader.vue` top bar, mounted once in `App.vue` root (covers clinic + hospital).
+- **Dark mode:** `composables/useTheme.js` (`useColorMode`, `.dark` on `<html>`, persists `ortho_theme`). Sun/Moon toggle in both `App.vue` + `HospitalLayout` topbars.
+
+### Migrated (done)
+Shells: `App.vue`, `HospitalLayout` (sidebar/topbar stay brand-green by design; content `bg-background`).
+Pages: Login, Dashboard, Patients, Inventory, Settings (+lazy-loaded forms), Pharmacy, Appointments, PatientDetail.
+Forms: PatientForm, InvoiceForm, PrescriptionForm.
+
+### Remaining (mechanical — same recipe, build-verify each)
+Pages: OPD reg/consulting · IPD (wards/beds/admissions) · Billing/Invoices · Reports · PortalSelect · Unauthorized · HospitalLogin.
+Forms: TreatmentTracker · 7 settings forms (`components/settings/*`) · hospital forms.
+
+**Recipe per file (token retheme):**
+1. `bg-white` → `bg-card` (or `bg-popover` for dropdowns); `border-gray-200/100` → `border-border`.
+2. `text-gray-900/800/700` → `text-foreground`; `text-gray-500/400` → `text-muted-foreground`.
+3. `bg-blue-100 text-blue-700` → `bg-accent text-accent-foreground`; active tab `border-blue-600 text-blue-700` → `border-primary text-primary`.
+4. Scoped `<style>` using token `@apply`: change `@reference "tailwindcss";` → **`@reference "../../css/app.css";`** (components/pages depth) or **`"../../../css/app.css"`** (`components/settings/`). Then `.input`→`border-input bg-background text-foreground … ring-ring`, `.btn-primary`→`bg-primary hover:bg-primary/90 text-primary-foreground`, `.btn-secondary`→`bg-secondary hover:bg-secondary/80 text-secondary-foreground`.
+
+**GOTCHA:** template `:class` token utilities work anywhere (full app.css loaded). But **`@apply` of custom tokens inside a scoped `<style>` needs `@reference "<rel>/css/app.css"`** — the bare `@reference "tailwindcss"` doesn't see `@theme inline` tokens → build error `Cannot apply unknown utility class border-input`.
+
+**Component-swap option** (for list/table/modal pages): `import { Button } from '@/components/ui/button'` etc; modal → `Dialog`/`DialogContent`; table → `Table/TableRow/…`; loading → `Skeleton`. See migrated Patients/Inventory/Dashboard for reference.

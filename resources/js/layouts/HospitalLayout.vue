@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-100 lg:flex">
+  <div class="min-h-screen bg-background text-foreground lg:flex">
     <aside class="hidden lg:flex lg:w-72 lg:flex-col text-white print:hidden" :style="{ background: 'var(--brand-sidebar)' }">
       <div class="px-5 py-5 border-b border-white/10">
         <router-link to="/hospital/dashboard" aria-label="Dashboard"><Logo variant="full" mono class="h-9" /></router-link>
@@ -39,6 +39,10 @@
           </router-link>
 
           <div class="ml-auto flex items-center gap-2">
+            <button @click="toggle" :title="mode === 'dark' ? 'Light mode' : 'Dark mode'" aria-label="Toggle theme"
+                    class="w-9 h-9 rounded-full hover:bg-white/10 flex items-center justify-center">
+              <component :is="mode === 'dark' ? Sun : Moon" class="w-5 h-5" />
+            </button>
             <span v-if="auth.role" class="hidden sm:inline-flex text-xs bg-white/10 px-2 py-1 rounded uppercase">{{ auth.role }}</span>
             <button @click="logout" class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold">
               {{ initials }}
@@ -97,10 +101,13 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import Logo from '../components/Logo.vue';
 import HmsIcon from '../components/HmsIcon.vue';
+import { Sun, Moon } from 'lucide-vue-next';
+import { useTheme } from '@/composables/useTheme';
 
 const route = useRoute();
 const router = useRouter();
 const auth = useAuthStore();
+const { mode, toggle } = useTheme();
 const drawerOpen = ref(false);
 
 watch(() => route.path, () => { drawerOpen.value = false; });

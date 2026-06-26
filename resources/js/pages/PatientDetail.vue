@@ -1,17 +1,17 @@
 <template>
   <div v-if="patient" class="space-y-6">
     <!-- Header -->
-    <div class="bg-white rounded-xl border border-gray-200 p-5 flex flex-wrap items-center justify-between gap-4">
+    <div class="bg-card rounded-xl border border-border p-5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-4">
-        <div class="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-2xl font-bold text-blue-700">
+        <div class="w-14 h-14 rounded-full bg-accent flex items-center justify-center text-2xl font-bold text-accent-foreground">
           {{ patient.name?.charAt(0) }}
         </div>
         <div>
-          <h1 class="text-xl font-bold text-gray-900">{{ patient.name }}</h1>
+          <h1 class="text-xl font-bold text-foreground">{{ patient.name }}</h1>
           <div class="flex items-center gap-2 mt-1">
-            <span class="text-sm font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{{ patient.op_number }}</span>
-            <span class="text-sm text-gray-500">{{ patient.phone }}</span>
-            <span v-if="patient.gender" class="text-xs text-gray-400 capitalize">{{ patient.gender }}</span>
+            <span class="text-sm font-semibold text-accent-foreground bg-accent px-2 py-0.5 rounded">{{ patient.op_number }}</span>
+            <span class="text-sm text-muted-foreground">{{ patient.phone }}</span>
+            <span v-if="patient.gender" class="text-xs text-muted-foreground capitalize">{{ patient.gender }}</span>
           </div>
         </div>
       </div>
@@ -21,12 +21,12 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex overflow-x-auto scrollbar-hide border-b border-gray-200">
+    <div class="flex overflow-x-auto scrollbar-hide border-b border-border">
       <button
         v-for="tab in TABS"
         :key="tab.key"
         @click="activeTab = tab.key"
-        :class="activeTab === tab.key ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700'"
+        :class="activeTab === tab.key ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
         class="flex-shrink-0 whitespace-nowrap px-4 py-2.5 border-b-2 text-sm font-medium transition-colors"
       >
         {{ tab.label }}
@@ -35,15 +35,15 @@
 
     <!-- Tab: Visit History -->
     <div v-if="activeTab === 'history'">
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="bg-card rounded-xl border border-border p-5">
         <VisitHistory :patient-id="patient.id" />
       </div>
     </div>
 
     <!-- Tab: New SOAP -->
     <div v-if="activeTab === 'soap'">
-      <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-6">
-        <h2 class="font-semibold text-gray-900">New Clinical Record</h2>
+      <div class="bg-card rounded-xl border border-border p-5 space-y-6">
+        <h2 class="font-semibold text-foreground">New Clinical Record</h2>
 
         <VASSlider v-model="record.vas_score" />
         <BodyMap v-model="record.body_map" :gender="patient?.gender || 'male'" />
@@ -61,14 +61,14 @@
 
     <!-- Tab: Treatments -->
     <div v-if="activeTab === 'treatments'">
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="bg-card rounded-xl border border-border p-5">
         <TreatmentTracker :patient-id="patient.id" :treatments="treatments" />
       </div>
     </div>
 
     <!-- Tab: Exercises -->
     <div v-if="activeTab === 'exercises'">
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="bg-card rounded-xl border border-border p-5">
         <ExerciseLibrary v-model="selectedExercises" />
         <div class="mt-4 flex justify-end">
           <button @click="saveExercises" :disabled="!selectedExercises.length" class="btn-primary">
@@ -80,14 +80,14 @@
 
     <!-- Tab: Prescription -->
     <div v-if="activeTab === 'rx'">
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="bg-card rounded-xl border border-border p-5">
         <PrescriptionForm :patient-id="patient.id" :clinical-record-id="lastRecordId" />
       </div>
     </div>
 
     <!-- Tab: Invoice -->
     <div v-if="activeTab === 'invoice'">
-      <div class="bg-white rounded-xl border border-gray-200 p-5">
+      <div class="bg-card rounded-xl border border-border p-5">
         <InvoiceForm :patient-id="patient.id" />
       </div>
     </div>
@@ -95,17 +95,17 @@
 
   <!-- Loading skeleton -->
   <div v-else class="space-y-6 animate-pulse">
-    <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-center gap-4">
+    <div class="bg-card rounded-xl border border-border p-5 flex items-center gap-4">
       <div class="w-14 h-14 rounded-full bg-gray-200"></div>
       <div class="space-y-2">
         <div class="h-5 w-48 bg-gray-200 rounded"></div>
         <div class="h-3 w-32 bg-gray-100 rounded"></div>
       </div>
     </div>
-    <div class="flex gap-4 border-b border-gray-200 pb-2">
+    <div class="flex gap-4 border-b border-border pb-2">
       <div v-for="n in 6" :key="n" class="h-4 w-20 bg-gray-100 rounded"></div>
     </div>
-    <div class="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+    <div class="bg-card rounded-xl border border-border p-5 space-y-3">
       <div class="h-4 w-1/3 bg-gray-200 rounded"></div>
       <div class="h-24 bg-gray-100 rounded-lg"></div>
       <div class="h-24 bg-gray-100 rounded-lg"></div>
@@ -197,6 +197,6 @@ async function saveExercises() {
 </script>
 
 <style scoped>
-@reference "tailwindcss";
-.btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
+@reference "../../css/app.css";
+.btn-primary { @apply bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
 </style>

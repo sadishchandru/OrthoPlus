@@ -2,11 +2,11 @@
   <form @submit.prevent="submit" class="space-y-5">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+        <label class="block text-sm font-medium text-foreground mb-1">Full Name <span class="text-red-500">*</span></label>
         <input v-model="form.name" required type="text" class="input" placeholder="Patient full name" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Phone <span class="text-red-500">*</span></label>
+        <label class="block text-sm font-medium text-foreground mb-1">Phone <span class="text-red-500">*</span></label>
         <!-- Single combined field: dial code + national number share one bordered box. -->
         <div class="flex items-stretch border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500"
              :class="phoneError ? 'border-red-400' : ''">
@@ -19,11 +19,11 @@
         <p v-if="phoneError" class="text-xs text-red-600 mt-1">{{ phoneError }}</p>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+        <label class="block text-sm font-medium text-foreground mb-1">Date of Birth</label>
         <input v-model="form.dob" type="date" class="input" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Gender</label>
+        <label class="block text-sm font-medium text-foreground mb-1">Gender</label>
         <select v-model="form.gender" class="input">
           <option value="">Select</option>
           <option value="male">Male</option>
@@ -35,7 +35,7 @@
 
     <!-- Address -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+      <label class="block text-sm font-medium text-foreground mb-1">Address</label>
       <input v-model="form.address.line1" type="text" class="input mb-2" placeholder="Street address" />
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <input v-model="form.address.city" type="text" class="input" placeholder="City" />
@@ -46,7 +46,7 @@
 
     <!-- Photo upload -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Photo</label>
+      <label class="block text-sm font-medium text-foreground mb-1">Photo</label>
       <input @change="onPhoto" type="file" accept="image/*" class="text-sm text-gray-500" />
       <div v-if="photoPreview" class="mt-2">
         <ImageLightbox :images="[{ url: photoPreview, name: 'Patient photo' }]" thumb-class="h-24 w-24" />
@@ -56,7 +56,7 @@
 
     <!-- Documents: real upload to patient_files (image/pdf/doc) -->
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Documents</label>
+      <label class="block text-sm font-medium text-foreground mb-1">Documents</label>
       <input @change="onDocuments" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.rtf" class="text-sm text-gray-500" />
       <p v-if="docFiles.length" class="text-xs text-gray-500 mt-1">{{ docFiles.length }} file(s) ready — saved on {{ isEdit ? 'update' : 'register' }}.</p>
 
@@ -207,8 +207,8 @@ async function submit() {
 </script>
 
 <style scoped>
-@reference "tailwindcss";
-.input { @apply w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm; }
-.btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
-.btn-secondary { @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
+@reference "../../css/app.css";
+.input { @apply w-full border border-input bg-background text-foreground rounded-lg px-3 py-2 focus:ring-2 focus:ring-ring focus:border-transparent outline-none text-sm; }
+.btn-primary { @apply bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
+.btn-secondary { @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
 </style>
