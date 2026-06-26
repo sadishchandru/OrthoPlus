@@ -1,31 +1,31 @@
 <template>
   <div class="space-y-6">
-    <h1 class="text-2xl font-bold text-gray-800">Pharmacy Counter</h1>
+    <h1 class="text-2xl font-bold text-foreground">Pharmacy Counter</h1>
 
     <!-- Patient search -->
-    <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <div class="bg-card border border-border rounded-xl p-4">
       <label class="text-xs font-medium text-gray-600 block mb-1">Patient (OP No / name / phone) — optional for walk-in</label>
       <div class="relative max-w-md">
         <input v-model="patientQuery" @input="searchPatient" @focus="searchPatient" autocomplete="off" inputmode="search" class="input" placeholder="Search patient…" />
         <div v-show="patientQuery.length >= 2 && (patSearching || patientResults.length)"
-             class="absolute z-[9999] w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
+             class="absolute z-[9999] w-full bg-popover border border-border rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
           <div v-if="patSearching && !patientResults.length" class="px-3 py-2 text-sm text-gray-400">Searching…</div>
           <button v-for="p in patientResults" :key="p.id" @mousedown.prevent="selectPatient(p)"
-                  class="w-full text-left px-3 py-3 min-h-11 hover:bg-blue-50 text-sm">
+                  class="w-full text-left px-3 py-3 min-h-11 hover:bg-muted text-sm">
             <span class="font-medium">{{ p.name }}</span>
             <span class="text-gray-500 text-xs ml-2">{{ p.op_number }} · {{ p.phone }}</span>
           </button>
         </div>
       </div>
       <div v-if="patient" class="mt-2 text-sm flex items-center gap-2">
-        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{{ patient.name }} ({{ patient.op_number }})</span>
-        <button @click="clearPatient" class="text-xs text-gray-400 hover:text-red-500">clear</button>
+        <span class="bg-accent text-accent-foreground px-2 py-0.5 rounded-full">{{ patient.name }} ({{ patient.op_number }})</span>
+        <button @click="clearPatient" class="text-xs text-muted-foreground hover:text-destructive">clear</button>
       </div>
     </div>
 
     <!-- Active prescriptions -->
-    <div v-if="prescriptions.length" class="bg-white border border-gray-200 rounded-xl p-4">
-      <h2 class="font-semibold text-gray-700 mb-2">Active Prescriptions</h2>
+    <div v-if="prescriptions.length" class="bg-card border border-border rounded-xl p-4">
+      <h2 class="font-semibold text-foreground mb-2">Active Prescriptions</h2>
       <div v-for="rx in prescriptions" :key="rx.id" class="border border-gray-100 rounded-lg p-3 mb-2">
         <div class="flex items-center justify-between mb-1">
           <span class="text-sm text-gray-500">Rx #{{ rx.id }} · {{ rx.date || '—' }}</span>
@@ -36,9 +36,9 @@
     </div>
 
     <!-- Line items -->
-    <div class="bg-white border border-gray-200 rounded-xl p-4">
+    <div class="bg-card border border-border rounded-xl p-4">
       <div class="flex items-center justify-between mb-3">
-        <h2 class="font-semibold text-gray-700">Bill Items</h2>
+        <h2 class="font-semibold text-foreground">Bill Items</h2>
         <button @click="addAdhocRow" class="btn-ghost text-xs">+ Ad-hoc item</button>
       </div>
 
@@ -46,10 +46,10 @@
       <div class="relative mb-3">
         <input v-model="medQuery" @input="searchMedGlobal" @focus="searchMedGlobal" inputmode="search" class="input" placeholder="Search medicine to add (name / generic)…" autocomplete="off" />
         <div v-show="medQuery.length >= 2 && (medSearching || medResults.length)"
-             class="absolute z-[9999] w-full bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
+             class="absolute z-[9999] w-full bg-popover border border-border rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto" style="-webkit-overflow-scrolling:touch;">
           <div v-if="medSearching && !medResults.length" class="px-3 py-3 text-xs text-gray-400">Searching…</div>
           <button v-for="m in medResults" :key="m.id" @mousedown.prevent="addMed(m)"
-                  class="w-full text-left px-3 py-3 min-h-11 hover:bg-blue-50 text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                  class="w-full text-left px-3 py-3 min-h-11 hover:bg-muted text-xs border-b border-gray-50 last:border-0 flex flex-wrap items-center gap-x-3 gap-y-0.5">
             <span class="font-medium text-sm text-gray-800">{{ m.name }}</span>
             <span class="text-gray-500">Generic: {{ m.generic_name || '—' }}</span>
             <span class="text-gray-500">HSN: {{ m.hsn_code || '—' }}</span>
@@ -122,8 +122,8 @@
     </div>
 
     <!-- Last invoice -->
-    <div v-if="lastInvoice" class="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
-      <span class="text-sm text-green-800">Invoice <b>{{ lastInvoice.invoice_no }}</b> · ₹{{ lastInvoice.total }} created.</span>
+    <div v-if="lastInvoice" class="bg-accent border border-border rounded-xl p-4 flex items-center justify-between">
+      <span class="text-sm text-accent-foreground">Invoice <b>{{ lastInvoice.invoice_no }}</b> · ₹{{ lastInvoice.total }} created.</span>
       <button @click="printBill" class="btn-primary text-xs">Print Bill</button>
     </div>
   </div>
@@ -252,8 +252,8 @@ function printBill() {
 </script>
 
 <style scoped>
-@reference "tailwindcss";
-.input { @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none w-full; }
-.btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
-.btn-ghost { @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium; }
+@reference "../../css/app.css";
+.input { @apply border border-input bg-background text-foreground rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-ring outline-none w-full; }
+.btn-primary { @apply bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
+.btn-ghost { @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium; }
 </style>

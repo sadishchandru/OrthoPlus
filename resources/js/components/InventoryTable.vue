@@ -1,89 +1,91 @@
 <template>
   <div class="space-y-4">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <input v-model="query" @input="load" type="text" class="input w-full sm:w-72" placeholder="Search medicines..." />
-      <button @click="showAdjust = true" class="btn-primary flex-shrink-0">+ Adjust Stock</button>
+      <Input v-model="query" @input="load" type="text" class="w-full sm:w-72" placeholder="Search medicines..." />
+      <Button @click="openNew" class="flex-shrink-0">+ Adjust Stock</Button>
     </div>
 
-    <div class="overflow-x-auto rounded-xl border border-gray-200">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50">
-          <tr class="text-xs text-gray-500 uppercase">
-            <th class="text-left px-4 py-3">Medicine</th>
-            <th class="text-left px-4 py-3 hidden sm:table-cell">Generic</th>
-            <th class="text-right px-4 py-3">Stock</th>
-            <th class="text-right px-4 py-3 hidden sm:table-cell">Price</th>
-            <th class="text-center px-4 py-3 hidden sm:table-cell">Status</th>
-            <th class="px-4 py-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="med in medicines" :key="med.id" class="border-t border-gray-100 hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium text-gray-800">{{ med.name }}</td>
-            <td class="px-4 py-3 text-gray-500 hidden sm:table-cell">{{ med.generic_name || '—' }}</td>
-            <td class="px-4 py-3 text-right" :class="totalStock(med) <= 10 ? 'text-red-600 font-semibold' : 'text-gray-700'">
+    <Card class="overflow-hidden">
+      <div v-if="loading" class="p-4 space-y-3">
+        <Skeleton v-for="i in 6" :key="i" class="h-9 w-full" />
+      </div>
+      <Table v-else>
+        <TableHeader class="bg-muted/50">
+          <TableRow>
+            <TableHead>Medicine</TableHead>
+            <TableHead class="hidden sm:table-cell">Generic</TableHead>
+            <TableHead class="text-right">Stock</TableHead>
+            <TableHead class="text-right hidden sm:table-cell">Price</TableHead>
+            <TableHead class="text-center hidden sm:table-cell">Status</TableHead>
+            <TableHead></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="med in medicines" :key="med.id">
+            <TableCell class="font-medium text-foreground">{{ med.name }}</TableCell>
+            <TableCell class="text-muted-foreground hidden sm:table-cell">{{ med.generic_name || '—' }}</TableCell>
+            <TableCell class="text-right" :class="totalStock(med) <= 10 ? 'text-destructive font-semibold' : 'text-foreground'">
               {{ totalStock(med) }}
-            </td>
-            <td class="px-4 py-3 text-right text-gray-700 hidden sm:table-cell">₹{{ med.sell_price }}</td>
-            <td class="px-4 py-3 text-center hidden sm:table-cell">
-              <span
-                :class="totalStock(med) <= 10 ? 'bg-red-100 text-red-700' : totalStock(med) <= 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'"
-                class="text-xs px-2 py-0.5 rounded-full font-medium"
-              >
-                {{ totalStock(med) <= 10 ? 'Low Stock' : totalStock(med) <= 50 ? 'Limited' : 'In Stock' }}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <button @click="openAdjust(med)" class="text-xs text-blue-600 hover:underline">Adjust</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            </TableCell>
+            <TableCell class="text-right text-foreground hidden sm:table-cell">₹{{ med.sell_price }}</TableCell>
+            <TableCell class="text-center hidden sm:table-cell">
+              <Badge :variant="stockVariant(med)">{{ stockLabel(med) }}</Badge>
+            </TableCell>
+            <TableCell class="text-right">
+              <Button variant="link" size="sm" class="h-auto p-0" @click="openAdjust(med)">Adjust</Button>
+            </TableCell>
+          </TableRow>
+          <TableRow v-if="!medicines.length">
+            <TableCell colspan="6" class="text-center text-muted-foreground py-6">No medicines found.</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </Card>
 
-    <!-- Adjust modal -->
-    <div v-if="showAdjust" class="fixed inset-0 bg-black/50 z-50 flex items-stretch md:items-center justify-center p-0 md:p-4">
-      <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-md shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
-        <h3 class="font-semibold text-gray-900 mb-4">Adjust Stock</h3>
+    <!-- Adjust dialog -->
+    <Dialog v-model:open="showAdjust">
+      <DialogContent class="max-w-md">
+        <DialogHeader><DialogTitle>Adjust Stock</DialogTitle></DialogHeader>
         <div class="space-y-3">
-          <div v-if="!adjustForm.medicine_id">
-            <label class="text-xs text-gray-600 mb-1 block">Search Medicine</label>
-            <input v-model="adjustSearch" @input="searchMeds" type="text" class="input w-full" placeholder="Type to search..." />
-            <div v-if="medResults.length" class="mt-1 border border-gray-200 rounded-lg overflow-hidden">
-              <button v-for="m in medResults" :key="m.id" @mousedown.prevent="selectMed(m)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-sm border-b border-gray-100 last:border-0">
-                {{ m.name }} <span class="text-gray-400">({{ m.generic_name }})</span>
+          <div v-if="!adjustForm.medicine_id" class="relative">
+            <Label class="mb-1 block">Search Medicine</Label>
+            <Input v-model="adjustSearch" @input="searchMeds" type="text" placeholder="Type to search..." />
+            <div v-if="medResults.length" class="mt-1 border border-border rounded-lg overflow-hidden bg-popover">
+              <button v-for="m in medResults" :key="m.id" @mousedown.prevent="selectMed(m)"
+                class="w-full text-left px-3 py-2 hover:bg-muted text-sm border-b border-border last:border-0">
+                {{ m.name }} <span class="text-muted-foreground">({{ m.generic_name }})</span>
               </button>
             </div>
           </div>
-          <div v-else class="flex items-center justify-between p-2 bg-blue-50 rounded">
-            <span class="text-sm font-medium text-blue-800">{{ adjustForm.medicineName }}</span>
-            <button @click="adjustForm.medicine_id = null; adjustForm.medicineName = ''" class="text-gray-400 hover:text-red-500">✕</button>
+          <div v-else class="flex items-center justify-between p-2 bg-accent text-accent-foreground rounded-md">
+            <span class="text-sm font-medium">{{ adjustForm.medicineName }}</span>
+            <button @click="adjustForm.medicine_id = null; adjustForm.medicineName = ''" class="text-muted-foreground hover:text-destructive">✕</button>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs text-gray-600 mb-1 block">Type</label>
-              <select v-model="adjustForm.type" class="input w-full">
+              <Label class="mb-1 block">Type</Label>
+              <select v-model="adjustForm.type" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <option value="in">Stock In</option>
                 <option value="out">Stock Out</option>
               </select>
             </div>
             <div>
-              <label class="text-xs text-gray-600 mb-1 block">Quantity</label>
-              <input v-model.number="adjustForm.qty" type="number" min="1" class="input w-full" />
+              <Label class="mb-1 block">Quantity</Label>
+              <Input v-model.number="adjustForm.qty" type="number" min="1" />
             </div>
           </div>
           <div>
-            <label class="text-xs text-gray-600 mb-1 block">Reason</label>
-            <input v-model="adjustForm.reason" type="text" class="input w-full" placeholder="e.g. Purchase, Dispensed" />
+            <Label class="mb-1 block">Reason</Label>
+            <Input v-model="adjustForm.reason" type="text" placeholder="e.g. Purchase, Dispensed" />
           </div>
         </div>
-        <div v-if="adjustError" class="mt-3 text-sm text-red-600">{{ adjustError }}</div>
-        <div class="flex justify-end gap-2 mt-4">
-          <button @click="showAdjust = false" class="btn-secondary">Cancel</button>
-          <button @click="submitAdjust" :disabled="adjusting" class="btn-primary">{{ adjusting ? 'Saving...' : 'Save' }}</button>
-        </div>
-      </div>
-    </div>
+        <div v-if="adjustError" class="text-sm text-destructive">{{ adjustError }}</div>
+        <DialogFooter>
+          <Button variant="secondary" @click="showAdjust = false">Cancel</Button>
+          <Button :disabled="adjusting" @click="submitAdjust">{{ adjusting ? 'Saving...' : 'Save' }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
@@ -91,10 +93,19 @@
 import { ref, reactive, onMounted } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const toast = useToast();
 const medicines = ref([]);
 const query = ref('');
+const loading = ref(true);
 const showAdjust = ref(false);
 const adjustSearch = ref('');
 const medResults = ref([]);
@@ -105,14 +116,31 @@ const adjustForm = reactive({ medicine_id: null, medicineName: '', type: 'in', q
 onMounted(load);
 
 async function load() {
-  const { data } = await axios.get('/api/inventory', { params: { q: query.value } });
-  medicines.value = data.data || data;
+  loading.value = true;
+  try {
+    const { data } = await axios.get('/api/inventory', { params: { q: query.value } });
+    medicines.value = data.data || data;
+  } finally {
+    loading.value = false;
+  }
 }
 
 function totalStock(med) {
   return med.stock?.reduce((s, b) => s + b.quantity_in_stock, 0) ?? 0;
 }
+function stockVariant(med) {
+  const s = totalStock(med);
+  return s <= 10 ? 'destructive' : s <= 50 ? 'secondary' : 'success';
+}
+function stockLabel(med) {
+  const s = totalStock(med);
+  return s <= 10 ? 'Low Stock' : s <= 50 ? 'Limited' : 'In Stock';
+}
 
+function openNew() {
+  Object.assign(adjustForm, { medicine_id: null, medicineName: '', type: 'in', qty: 1, reason: '' });
+  showAdjust.value = true;
+}
 function openAdjust(med) {
   adjustForm.medicine_id = med.id;
   adjustForm.medicineName = med.name;
@@ -151,10 +179,3 @@ async function submitAdjust() {
   }
 }
 </script>
-
-<style scoped>
-@reference "tailwindcss";
-.input { @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none; }
-.btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
-.btn-secondary { @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
-</style>
