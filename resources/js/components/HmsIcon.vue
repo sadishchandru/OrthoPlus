@@ -26,6 +26,8 @@ const paths = {
   cash: '<rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/>',
   clock: '<circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/>',
   bolt: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  scalpel: '<path d="M20 4 9 15"/><path d="M14.5 4H20v5.5"/><path d="m9 15-5 5"/><path d="M4 20h4v-4"/>',
+  'calendar-check': '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="9 16 11 18 15 14"/>',
   dot: '<circle cx="12" cy="12" r="3"/>',
 };
 </script>

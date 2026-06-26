@@ -8,7 +8,10 @@
 
       <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         <div v-for="group in visibleGroups" :key="group.label">
-          <div class="px-3 text-[11px] uppercase tracking-wider text-white/45 font-semibold">{{ group.label }}</div>
+          <div class="px-3 text-[11px] uppercase tracking-wider text-white/45 font-semibold flex items-center gap-1.5">
+            <span v-if="group.icon" class="w-3.5 h-3.5 inline-flex"><HmsIcon :name="group.icon" /></span>
+            {{ group.label }}
+          </div>
           <div class="mt-2 space-y-1">
             <router-link
               v-for="item in group.items"
@@ -73,7 +76,10 @@
 
           <nav class="px-3 py-4 space-y-5">
             <div v-for="group in visibleGroups" :key="group.label">
-              <div class="px-3 text-[11px] uppercase tracking-wider text-white/45 font-semibold">{{ group.label }}</div>
+              <div class="px-3 text-[11px] uppercase tracking-wider text-white/45 font-semibold flex items-center gap-1.5">
+            <span v-if="group.icon" class="w-3.5 h-3.5 inline-flex"><HmsIcon :name="group.icon" /></span>
+            {{ group.label }}
+          </div>
               <div class="mt-2 space-y-1">
                 <router-link
                   v-for="item in group.items"
@@ -136,8 +142,9 @@ const groups = [
   },
   {
     label: 'Surgery',
+    icon: 'scalpel',
     items: [
-      { label: 'Schedule', to: '/hospital/surgery', page: 'surgery', icon: 'tool' },
+      { label: 'Schedule', to: '/hospital/surgery', page: 'surgery', icon: 'calendar-check' },
       { label: 'Pre-Op Planning', to: '/hospital/pre-op', page: 'surgery', icon: 'clipboard' },
       { label: 'Implant Stock', to: '/hospital/implants', page: 'surgery', icon: 'box' },
     ],
