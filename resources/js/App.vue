@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-background text-foreground">
     <GlobalLoader />
-    <header v-if="showNav" class="bg-white shadow-sm sticky top-0 z-40 print:hidden">
+    <header v-if="showNav" class="bg-card border-b border-border shadow-sm sticky top-0 z-40 print:hidden">
       <div class="flex items-center gap-2 min-h-[3.5rem] px-3 md:px-4 max-w-7xl mx-auto">
         <div class="flex items-center gap-2 flex-shrink-0">
-          <button @click="drawerOpen = true" class="sm:hidden p-2 rounded-lg hover:bg-gray-100" aria-label="Menu">
-            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <button @click="drawerOpen = true" class="sm:hidden p-2 rounded-lg hover:bg-muted" aria-label="Menu">
+            <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
@@ -36,11 +36,11 @@
           </router-link>
           <span v-if="auth.role" class="hidden lg:inline text-xs bg-gray-100 px-2 py-1 rounded-full uppercase flex-shrink-0">{{ auth.role }}</span>
           <button @click="toggle" :title="mode === 'dark' ? 'Light mode' : 'Dark mode'" aria-label="Toggle theme"
-                  class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 flex-shrink-0">
+                  class="w-9 h-9 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0">
             <component :is="mode === 'dark' ? Sun : Moon" class="w-5 h-5" />
           </button>
           <button @click="logout" :title="`${auth.user?.name || 'User'} - logout`"
-                  class="w-9 h-9 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center hover:bg-blue-200">
+                  class="w-9 h-9 rounded-full bg-accent text-accent-foreground text-xs font-bold flex items-center justify-center hover:bg-accent/80">
             {{ userInitials }}
           </button>
         </div>
@@ -51,7 +51,7 @@
       <router-view />
     </main>
 
-    <nav v-if="showNav" class="sm:hidden fixed bottom-0 inset-x-0 z-40 flex overflow-x-auto border-t bg-white print:hidden">
+    <nav v-if="showNav" class="sm:hidden fixed bottom-0 inset-x-0 z-40 flex overflow-x-auto border-t border-border bg-card print:hidden">
       <router-link
         v-for="link in bottomLinks"
         :key="link.to"
@@ -73,10 +73,10 @@
            class="fixed inset-0 bg-black/40 z-50 sm:hidden print:hidden"></div>
       <transition name="drawer">
         <aside v-if="showNav && drawerOpen"
-               class="fixed left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-white shadow-xl z-50 sm:hidden print:hidden overflow-y-auto flex flex-col">
+               class="fixed left-0 top-0 bottom-0 w-72 max-w-[80vw] bg-card text-card-foreground shadow-xl z-50 sm:hidden print:hidden overflow-y-auto flex flex-col">
           <div class="p-4 border-b flex justify-between items-center">
             <span class="font-bold text-blue-700">OrthoPlus</span>
-            <button @click="drawerOpen = false" class="w-10 h-10 flex items-center justify-center rounded hover:bg-gray-100" aria-label="Close">X</button>
+            <button @click="drawerOpen = false" class="w-10 h-10 flex items-center justify-center rounded hover:bg-muted" aria-label="Close">X</button>
           </div>
           <nav class="p-3 space-y-1 flex-1">
             <router-link
@@ -89,7 +89,7 @@
             >{{ link.label }}</router-link>
           </nav>
           <div v-if="auth.user" class="p-4 border-t text-sm">
-            <div class="text-gray-700 mb-2">{{ auth.user.name }} <span class="uppercase text-gray-400">{{ auth.role }}</span></div>
+            <div class="text-foreground mb-2">{{ auth.user.name }} <span class="uppercase text-muted-foreground">{{ auth.role }}</span></div>
             <button @click="logout" class="w-full text-left text-blue-600 hover:underline py-2">Logout</button>
           </div>
         </aside>
@@ -153,12 +153,12 @@ async function logout() {
 </script>
 
 <style scoped>
-@reference "tailwindcss";
-.nav-pill { @apply px-2 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm text-gray-600 hover:bg-gray-100 hover:text-gray-900 whitespace-nowrap transition-colors flex-shrink-0; }
-.nav-pill-active, .nav-pill.router-link-active { @apply bg-blue-50 text-blue-700 font-medium; }
-.drawer-link { @apply block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700; }
+@reference "../css/app.css";
+.nav-pill { @apply px-2 lg:px-3 py-1.5 rounded-lg text-xs lg:text-sm text-muted-foreground hover:bg-muted hover:text-foreground whitespace-nowrap transition-colors flex-shrink-0; }
+.nav-pill-active, .nav-pill.router-link-active { @apply bg-accent text-accent-foreground font-medium; }
+.drawer-link { @apply block px-4 py-3 rounded-lg text-foreground hover:bg-accent hover:text-accent-foreground; }
 .drawer-link.router-link-active { @apply bg-blue-50 text-blue-700; }
-.mobile-nav-item { @apply flex-1 flex flex-col items-center justify-center py-2 text-[11px] text-gray-600 gap-0.5 min-h-[3.5rem]; }
+.mobile-nav-item { @apply flex-1 flex flex-col items-center justify-center py-2 text-[11px] text-muted-foreground gap-0.5 min-h-[3.5rem]; }
 .drawer-enter-active, .drawer-leave-active { transition: transform 0.2s ease; }
 .drawer-enter-from, .drawer-leave-to { transform: translateX(-100%); }
 </style>

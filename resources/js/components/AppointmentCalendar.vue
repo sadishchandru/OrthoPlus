@@ -10,7 +10,7 @@
     </div>
 
     <!-- Calendar -->
-    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div class="bg-card rounded-xl border border-border overflow-hidden">
       <FullCalendar
         ref="calRef"
         :options="calOptions"
@@ -19,18 +19,18 @@
 
     <!-- Book Modal -->
     <div v-if="showBook" class="fixed inset-0 bg-black/50 z-50 flex items-stretch md:items-center justify-center p-0 md:p-4">
-      <div class="bg-white rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-md shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
-        <h3 class="font-semibold text-gray-900 mb-4">Book Appointment</h3>
+      <div class="bg-card text-card-foreground rounded-none md:rounded-xl p-4 md:p-6 w-full md:max-w-md shadow-xl h-full md:h-auto max-h-screen md:max-h-[90vh] overflow-y-auto">
+        <h3 class="font-semibold text-foreground mb-4">Book Appointment</h3>
         <div class="space-y-3">
           <div>
             <div class="flex items-center justify-between mb-1">
-              <label class="text-xs text-gray-600 block">Patient</label>
+              <label class="text-xs text-muted-foreground block">Patient</label>
               <div class="flex gap-1">
                 <button type="button" @click="bookMode = 'search'"
-                  :class="bookMode === 'search' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'"
+                  :class="bookMode === 'search' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'"
                   class="text-xs px-2 py-1 rounded-full">Existing</button>
                 <button type="button" @click="bookMode = 'new'"
-                  :class="bookMode === 'new' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600'"
+                  :class="bookMode === 'new' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'"
                   class="text-xs px-2 py-1 rounded-full">New</button>
               </div>
             </div>
@@ -49,17 +49,17 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs text-gray-600 mb-1 block">Date</label>
+              <label class="text-xs text-muted-foreground mb-1 block">Date</label>
               <input v-model="bookForm.scheduled_date" @change="checkSlot" type="date" class="input w-full" />
             </div>
             <div>
-              <label class="text-xs text-gray-600 mb-1 block">Time</label>
+              <label class="text-xs text-muted-foreground mb-1 block">Time</label>
               <input v-model="bookForm.scheduled_time" @change="checkSlot" type="time" class="input w-full" />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="text-xs text-gray-600 mb-1 block">Duration</label>
+              <label class="text-xs text-muted-foreground mb-1 block">Duration</label>
               <select v-model="bookForm.duration_minutes" @change="checkSlot" class="input w-full">
                 <option value="15">15 min</option>
                 <option value="30">30 min</option>
@@ -68,7 +68,7 @@
               </select>
             </div>
             <div>
-              <label class="text-xs text-gray-600 mb-1 block">Therapist</label>
+              <label class="text-xs text-muted-foreground mb-1 block">Therapist</label>
               <select v-model="bookForm.therapist_id" @change="checkSlot" class="input w-full">
                 <option value="">Any</option>
                 <option v-for="t in therapists" :key="t.id" :value="t.id">{{ t.name }}</option>
@@ -76,7 +76,7 @@
             </div>
           </div>
           <div>
-            <label class="text-xs text-gray-600 mb-1 block">Notes</label>
+            <label class="text-xs text-muted-foreground mb-1 block">Notes</label>
             <input v-model="bookForm.notes" type="text" class="input w-full" placeholder="Optional notes..." />
           </div>
         </div>
@@ -254,10 +254,10 @@ async function submitBook() {
 </script>
 
 <style scoped>
-@reference "tailwindcss";
-.input { @apply border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none; }
-.btn-primary { @apply bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
-.btn-secondary { @apply bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
+@reference "../../css/app.css";
+.input { @apply border border-input bg-background text-foreground rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-ring outline-none; }
+.btn-primary { @apply bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50; }
+.btn-secondary { @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors; }
 
 /* Mobile: keep the calendar header on one row — title was wrapping over prev/next. */
 :deep(.fc-toolbar-title) { font-size: clamp(0.9rem, 3vw, 1.25rem) !important; }
